@@ -50,3 +50,4 @@ ehthumbs.db
 # Others
 *.bak
 *.Backup
+.env
