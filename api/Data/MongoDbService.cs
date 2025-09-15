@@ -18,7 +18,7 @@ namespace api.Data
             _database = _client.GetDatabase(configuration["MONGO_DATABASE_NAME"]);
         }
 
-        public IMongoCollection<AppUser> Users => _database.GetCollection<AppUser>("Users");
+        public IMongoCollection<AppUser> Users => _database.GetCollection<AppUser>("users");
         public IMongoCollection<Workout> Workouts => _database.GetCollection<Workout>("Workouts");
         public IMongoCollection<Template> Templates => _database.GetCollection<Template>("Templates");
     }

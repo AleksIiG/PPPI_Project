@@ -1,33 +1,17 @@
 using api.Data;
 using dotenv.net;
 
-
-
-
-
-// Завантаження змінних середовища з .env файлу
-DotEnv.Load(options: new DotEnvOptions(envFilePaths: new[] { ".env" }));
+DotEnv.Load(options: new DotEnvOptions(envFilePaths: new[] {".env"}));
 var configuration = new ConfigurationBuilder().AddEnvironmentVariables().Build();
 var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.AddEnvironmentVariables();
 
-builder.Services.AddOpenApi();
-builder.Services.AddEndpointsApiExplorer();
+// Реєстрація MongoDbService
 builder.Services.AddSingleton<MongoDbService>();
-
-
-
-
-
+builder.Services.AddControllers();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
-
+app.MapControllers();
 app.UseHttpsRedirection();
-
 app.Run();
-
