@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace api.Models
 {
-    public class Exercise
+    public class Workout
     {
         
     }

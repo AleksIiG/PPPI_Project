@@ -5,7 +5,12 @@ using System.Threading.Tasks;
 
 namespace api.Models
 {
-    public class Tags
+    public class Workout_Tag
+    {
+
+    }
+
+    public class Template_Tag
     {
         
     }
