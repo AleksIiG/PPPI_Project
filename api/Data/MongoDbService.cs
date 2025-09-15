@@ -19,8 +19,8 @@ namespace api.Data
         }
 
         public IMongoCollection<AppUser> Users => _database.GetCollection<AppUser>("users");
-        public IMongoCollection<Workout> Workouts => _database.GetCollection<Workout>("Workouts");
-        public IMongoCollection<Template> Templates => _database.GetCollection<Template>("Templates");
+        public IMongoCollection<Workout> Workouts => _database.GetCollection<Workout>("workouts");
+        public IMongoCollection<Exercise> Templates => _database.GetCollection<Exercise>("exercise");
     }
 }
 
