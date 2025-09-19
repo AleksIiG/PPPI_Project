@@ -13,16 +13,6 @@ namespace api.Controllers
     [Route("api/users")]
     public class UserController : ControllerBase
     {
-        private readonly MongoDbService _mongo;
-        public UserController(MongoDbService mongo)
-        {
-            _mongo = mongo;
-        }
-        [HttpGet]
-        public IActionResult GetAll()
-        {
-            var users = _mongo.Users.Find(_ => true).ToList();
-            return Ok(users);
-        }
+       
     }
 }

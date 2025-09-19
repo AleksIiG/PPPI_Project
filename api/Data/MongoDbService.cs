@@ -20,7 +20,7 @@ namespace api.Data
 
         public IMongoCollection<AppUser> Users => _database.GetCollection<AppUser>("Users");
         public IMongoCollection<Workout> Workouts => _database.GetCollection<Workout>("Workouts");
-        public IMongoCollection<Exercise> Templates => _database.GetCollection<Exercise>("Exercises");
+        public IMongoCollection<Exercise> Exercises => _database.GetCollection<Exercise>("Exercises");
         public IMongoCollection<ExerciseTag> ExerciseTags => _database.GetCollection<ExerciseTag>("ExerciseTags");
         public IMongoCollection<WorkoutTag> WorkoutTags => _database.GetCollection<WorkoutTag>("WorkoutTags");
     }

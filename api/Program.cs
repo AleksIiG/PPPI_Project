@@ -1,17 +1,25 @@
 using api.Data;
+using api.Interface;
+using api.Repesitory;
 using dotenv.net;
 
-DotEnv.Load(options: new DotEnvOptions(envFilePaths: new[] {".env"}));
-var configuration = new ConfigurationBuilder().AddEnvironmentVariables().Build();
-var builder = WebApplication.CreateBuilder(args);
-builder.Configuration.AddEnvironmentVariables();
+DotEnv.Load(options: new DotEnvOptions(envFilePaths: new[] { ".env" }));
 
-// Реєстрація MongoDbService
+var builder = WebApplication.CreateBuilder(args);
+
+// Додаємо всі джерела конфігурації
+builder.Configuration
+    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true) // appsettings
+    .AddEnvironmentVariables(); // ENV та .env
+
+// Реєстрація сервісів
 builder.Services.AddSingleton<MongoDbService>();
+builder.Services.AddScoped<IExerciseRepository, ExerciseRepository>();
+
 builder.Services.AddControllers();
 
 var app = builder.Build();
 
-app.MapControllers();
 app.UseHttpsRedirection();
+app.MapControllers();
 app.Run();
