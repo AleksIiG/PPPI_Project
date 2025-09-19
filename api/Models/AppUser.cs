@@ -26,9 +26,21 @@ namespace api.Models
         public string Email { get; set; } = string.Empty;
 
         [Required]
+        [BsonElement("passwordHash")]
         [StringLength(100, MinimumLength = 6, ErrorMessage = "Password must be at least 6 characters.")]
-        [BsonElement("password")]
-        public string Password { get; set; } = string.Empty;
+        public string PasswordHash { get; set; } = string.Empty;
+
+
+        [BsonElement("likedWorkoutsIds")]
+        [BsonRepresentation(BsonType.ObjectId)]
+        public List<string> LikedWorkouts { get; set; } = new();
+
+        [BsonElement("createdWorkoutsIds")]
+        [BsonRepresentation(BsonType.ObjectId)]
+        public List<string> CreatedWorkouts { get; set; } = new();   
+        
+        [BsonElement("createdAt")]
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         // TODO: Liked Shablons
         // TODO: Created Shablons
 

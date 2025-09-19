@@ -18,13 +18,23 @@ namespace api.Models
         public string Name { get; set; } = string.Empty;
         [BsonElement("description")]
         public string Description { get; set; } = string.Empty;
-        
+
         [Required]
-        [BsonElement("exercises")]
-        public List<Exercise> Exercises { get; set; } = new List<Exercise>();
+        [BsonElement("exerciseIds")]
+        [BsonRepresentation(BsonType.ObjectId)]
+        public List<string> ExerciseIds { get; set; } = new List<string>();
+        [BsonElement("userId")]
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string UserId { get; set; } = string.Empty;
+
+        [BsonElement("tagsIds")]
+        [BsonRepresentation(BsonType.ObjectId)]
+        public List<string> TagsIds { get; set; } = new List<string>();
 
         // TODO: Image
         // TODO: Shablon Tags
-        // TODO: Warm-up exercises
+        
+
+        // TODO: Change Exercises to list of Exercises IDs
     }
 }

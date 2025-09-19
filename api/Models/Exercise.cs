@@ -19,16 +19,13 @@ namespace api.Models
         public string Name { get; set; } = string.Empty;
         [BsonElement("description")]
         public string Description { get; set; } = string.Empty;
-        
-        [Required]
-        [BsonElement("sets")]
-        public int Sets { get; set; }
 
-        [Required]
-        [BsonElement("reps")]
-        public int Reps { get; set; }
-        // TODO: Image
+        [BsonId]
+        [BsonRepresentation(BsonType.ObjectId)]
+        [BsonElement("tagsIds")]
+        public List<string> TagsIds { get; set; } = new List<string>();
+        
         // TODO: Exercise Tag
- 
+
     }
 }
