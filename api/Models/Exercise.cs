@@ -20,7 +20,6 @@ namespace api.Models
         [BsonElement("description")]
         public string Description { get; set; } = string.Empty;
 
-        [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
         [BsonElement("tagsIds")]
         public List<string> TagsIds { get; set; } = new List<string>();
