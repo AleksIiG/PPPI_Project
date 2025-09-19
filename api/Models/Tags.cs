@@ -19,7 +19,7 @@ namespace api.Models
         public string Name { get; set; } = string.Empty;
     }
 
-    public class TemplateTag
+    public class ExerciseTag
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]

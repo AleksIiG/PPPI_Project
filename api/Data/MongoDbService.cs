@@ -18,9 +18,11 @@ namespace api.Data
             _database = _client.GetDatabase(configuration["MONGO_DATABASE_NAME"]);
         }
 
-        public IMongoCollection<AppUser> Users => _database.GetCollection<AppUser>("users");
-        public IMongoCollection<Workout> Workouts => _database.GetCollection<Workout>("workouts");
-        public IMongoCollection<Exercise> Templates => _database.GetCollection<Exercise>("exercise");
+        public IMongoCollection<AppUser> Users => _database.GetCollection<AppUser>("Users");
+        public IMongoCollection<Workout> Workouts => _database.GetCollection<Workout>("Workouts");
+        public IMongoCollection<Exercise> Templates => _database.GetCollection<Exercise>("Exercises");
+        public IMongoCollection<ExerciseTag> ExerciseTags => _database.GetCollection<ExerciseTag>("ExerciseTags");
+        public IMongoCollection<WorkoutTag> WorkoutTags => _database.GetCollection<WorkoutTag>("WorkoutTags");
     }
 }
 
