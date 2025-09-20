@@ -25,5 +25,16 @@ namespace api.Controllers
             var exercises = await _exerRepo.GetAllAsync();
             return Ok(exercises);
         }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById([FromRoute] string id)
+        {
+            var exercise = await _exerRepo.GetByIdAsync(id);
+            if (exercise == null)
+            {
+                return NotFound($"There is no exercise with id: {id}");
+            }
+            return Ok(exercise);
+        }
     }
 }

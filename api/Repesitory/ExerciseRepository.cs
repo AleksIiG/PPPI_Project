@@ -25,9 +25,9 @@ namespace api.Repesitory
             return await _database.Exercises.Find(_ => true).ToListAsync();
         }
 
-        public Task<Exercise?> GetById(string id)
+        public async Task<Exercise?> GetByIdAsync(string id)
         {
-            throw new NotImplementedException();
+            return await _database.Exercises.Find(e => e.Id == id).FirstOrDefaultAsync();
         }
     }
 }
