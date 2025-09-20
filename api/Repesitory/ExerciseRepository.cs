@@ -14,11 +14,12 @@ namespace api.Repesitory
 
         private readonly MongoDbService _database;
 
-        public ExerciseRepository( MongoDbService database)
+        public ExerciseRepository(MongoDbService database)
         {
             _database = database;
         }
 
+        
 
         public async Task<List<Exercise>> GetAllAsync()
         {
@@ -29,5 +30,18 @@ namespace api.Repesitory
         {
             return await _database.Exercises.Find(e => e.Id == id).FirstOrDefaultAsync();
         }
+        public async Task<Exercise?> DeleteAsync(string id)
+        {
+
+            var exerciseModel = await _database.Exercises.Find(e => e.Id == id).FirstOrDefaultAsync();
+            if (exerciseModel == null)
+            {
+                return null;
+            }
+
+            await _database.Exercises.DeleteOneAsync(e => e.Id == id);
+            return exerciseModel;
+        }
+        
     }
 }

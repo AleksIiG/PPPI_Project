@@ -29,12 +29,24 @@ namespace api.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById([FromRoute] string id)
         {
-            var exercise = await _exerRepo.GetByIdAsync(id);
-            if (exercise == null)
+            var exerciseModel = await _exerRepo.GetByIdAsync(id);
+            if (exerciseModel == null)
             {
                 return NotFound($"There is no exercise with id: {id}");
             }
-            return Ok(exercise);
+            return Ok(exerciseModel);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete([FromRoute] string id)
+        {
+            var exerciseModel = await _exerRepo.DeleteAsync(id);
+
+            if (exerciseModel == null)
+            {
+                return NotFound($"There is no exercise with id: {id}");
+            }
+            return NoContent();
         }
     }
 }
