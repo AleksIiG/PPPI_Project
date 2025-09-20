@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using api.Data;
+using api.Dto.ExerciseDTOs;
 using api.Interface;
 using api.Models;
 using MongoDB.Driver;
@@ -43,9 +44,25 @@ namespace api.Repesitory
             return exerciseModel;
         }
 
-        public Task<Exercise?> Create(Exercise commentModel)
+        public async Task<Exercise?> CreateAsync(Exercise exerciseModel)
         {
-            throw new NotImplementedException();
+            var existExercise = await _database.Exercises.Find(e => e.Name == exerciseModel.Name).AnyAsync();
+            if (existExercise)
+            {
+                throw new InvalidOperationException($"Exercise '{exerciseModel.Name}' already exists.");
+            }
+
+            //Unique index for not double routes in db
+            var indexKeys = Builders<Exercise>.IndexKeys.Ascending(e => e.Name);
+            await _database.Exercises.Indexes.CreateOneAsync(
+                new CreateIndexModel<Exercise>(indexKeys, new CreateIndexOptions { Unique = true })
+            );
+
+            await _database.Exercises.InsertOneAsync(exerciseModel);
+            return exerciseModel;
+
+
+
         }
     }
 }

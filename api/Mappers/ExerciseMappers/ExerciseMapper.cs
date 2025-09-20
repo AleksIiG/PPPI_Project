@@ -20,14 +20,13 @@ namespace api.Mappers.ExerciseMapper
             };
         }
 
-        public static Exercise ToExerciseFromExerciseDto(this ExerciseDto exerciseDto)
+        public static Exercise ToExerciseFromCreateExerciseDto(this CreateExerciseDto createExerciseDto)
         {
             return new Exercise
             {
-                Id = exerciseDto.Id,
-                Name = exerciseDto.Name,
-                Description = exerciseDto.Description,
-                TagsIds = exerciseDto.TagsIds ?? new List<string>()
+                Name = createExerciseDto.Name,
+                Description = createExerciseDto.Description,
+                TagsIds = createExerciseDto.TagsIds ?? new List<string>()
             };
         }
     }

@@ -11,7 +11,7 @@ namespace api.Interface
         Task<List<Exercise>> GetAllAsync();
         Task<Exercise?> GetByIdAsync(string id);
         Task<Exercise?> DeleteAsync (string id);
-        Task<Exercise?> Create(Exercise commentModel);
+        Task<Exercise?> CreateAsync(Exercise commentModel);
         // Task<Exercise?> Update(string Id, Exercise commentDto);
     }
 }

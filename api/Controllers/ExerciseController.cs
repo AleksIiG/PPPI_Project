@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using api.Dto.ExerciseDTOs;
 using api.Interface;
 using api.Mappers;
 using api.Mappers.ExerciseMapper;
@@ -50,6 +51,32 @@ namespace api.Controllers
                 return NotFound($"There is no exercise with id: {id}");
             }
             return NoContent();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] CreateExerciseDto exerciseDto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            try
+            {
+                var exercise = exerciseDto.ToExerciseFromCreateExerciseDto();
+                var createdExercise = await _exerRepo.CreateAsync(exercise);
+                if (createdExercise == null)
+                {
+                    return BadRequest();
+                }
+                return CreatedAtAction(nameof(GetById), new { id = createdExercise.Id }, createdExercise);
+            }
+
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { message = ex.Message });
+            }
+
+            //TODO: Придумати як зробити перевірку на Тегах
+                
         }
     }
 }
