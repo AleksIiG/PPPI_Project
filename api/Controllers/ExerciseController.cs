@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using api.Interface;
+using api.Mappers;
+using api.Mappers.ExerciseMapper;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,6 +25,7 @@ namespace api.Controllers
         public async Task<IActionResult> GetAll()
         {
             var exercises = await _exerRepo.GetAllAsync();
+            var exercisesDto = exercises.Select(e => e.ToExerciseDto()).ToList();
             return Ok(exercises);
         }
 
@@ -34,7 +37,7 @@ namespace api.Controllers
             {
                 return NotFound($"There is no exercise with id: {id}");
             }
-            return Ok(exerciseModel);
+            return Ok(exerciseModel.ToExerciseDto());
         }
 
         [HttpDelete("{id}")]

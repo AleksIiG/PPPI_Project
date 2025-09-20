@@ -19,7 +19,7 @@ namespace api.Repesitory
             _database = database;
         }
 
-        
+
 
         public async Task<List<Exercise>> GetAllAsync()
         {
@@ -42,6 +42,10 @@ namespace api.Repesitory
             await _database.Exercises.DeleteOneAsync(e => e.Id == id);
             return exerciseModel;
         }
-        
+
+        public Task<Exercise?> Create(Exercise commentModel)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
