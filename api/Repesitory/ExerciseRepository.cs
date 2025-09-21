@@ -61,7 +61,10 @@ namespace api.Repesitory
             await _database.Exercises.InsertOneAsync(exerciseModel);
             return exerciseModel;
 
-
+            //TODO: Придумати як зробити перевірку на Тегах
+            //TODO: Придумати як зробити перевірку на Тегах
+            //TODO: Придумати як зробити перевірку на Тегах
+            //TODO: Придумати як зробити перевірку на Тегах
 
         }
     }
