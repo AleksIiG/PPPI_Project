@@ -79,7 +79,31 @@ namespace api.Controllers
             //TODO: Придумати як зробити перевірку на Тегах
             //TODO: Придумати як зробити перевірку на Тегах
             //TODO: Придумати як зробити перевірку на Тегах
+
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update([FromBody] UpdateExerciseDto exerciseDto, string id)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            try
+            {
+                // DTO → Model
+                var exercise = exerciseDto.ToExerciseFromUpdateExerciseDto();
+
+                // Service → перевірки та оновлення
+                var updated = await _exerRepo.UpdateAsync(id, exercise);
+
+                // Model → DTO для відповіді
+                return Ok(updated);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { message = ex.Message });
+            }
                 
+            
         }
     }
 }

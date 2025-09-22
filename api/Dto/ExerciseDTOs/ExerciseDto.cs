@@ -25,4 +25,12 @@ namespace api.Dto.ExerciseDTOs
 
         public List<string> TagsIds { get; set; } = new();
     }
+
+    public class UpdateExerciseDto
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public List<string> TagsIds { get; set; } = new();
+    }
 }

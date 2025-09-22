@@ -67,5 +67,27 @@ namespace api.Repesitory
             //TODO: Придумати як зробити перевірку на Тегах
 
         }
+
+        public async Task<Exercise?> UpdateAsync(string Id, Exercise exerciseModel)
+        {
+            var UpdatedExercise = await _database.Exercises.Find(e => e.Id == Id).FirstOrDefaultAsync();
+            if (UpdatedExercise == null)
+            {
+                throw new InvalidOperationException($"Exercise with id {Id} not found.");
+            }
+            if (UpdatedExercise.Name != exerciseModel.Name && await ExistsByNameAsync(exerciseModel.Name))
+                throw new InvalidOperationException($"Exercise with name '{exerciseModel.Name}' already exists.");
+
+            exerciseModel.Id = Id;
+            await _database.Exercises.ReplaceOneAsync(e => e.Id == Id, exerciseModel);
+            return exerciseModel;
+        }
+
+        public async Task<bool> ExistsByNameAsync(string name)
+        {
+            return await _database.Exercises.Find(e => e.Name == name).AnyAsync();
+        }
+
+        
     }
 }

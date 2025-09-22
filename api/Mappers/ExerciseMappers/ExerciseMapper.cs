@@ -29,5 +29,15 @@ namespace api.Mappers.ExerciseMapper
                 TagsIds = createExerciseDto.TagsIds ?? new List<string>()
             };
         }
+        public static Exercise ToExerciseFromUpdateExerciseDto(this UpdateExerciseDto createExerciseDto)
+        {
+            return new Exercise
+            {
+                Name = createExerciseDto.Name,
+                Description = createExerciseDto.Description,
+                TagsIds = createExerciseDto.TagsIds ?? new List<string>()
+            };
+        }
     }
+    
 }
