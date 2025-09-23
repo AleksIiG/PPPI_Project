@@ -2,15 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-<<<<<<< HEAD
-using api.Interface;
-=======
+
 using api.Dto.ExerciseDTOs;
 using api.Interface;
 using api.Mappers;
 using api.Mappers.ExerciseMapper;
 using api.Services.Interfaces;
->>>>>>> future/exercise_controller
+
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,19 +19,7 @@ namespace api.Controllers
     public class ExerciseController : ControllerBase
     {
 
-<<<<<<< HEAD
-        private readonly IExerciseRepository _exerRepo;
-        public ExerciseController(IExerciseRepository exerRepo)
-        {
-            _exerRepo = exerRepo;
-        }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAll()
-        {
-            var exercises = await _exerRepo.GetAllAsync();
-            return Ok(exercises);
-=======
         private readonly IExerciseService _exerciseService;
 
         public ExerciseController(IExerciseService exerciseService)
@@ -138,7 +124,6 @@ namespace api.Controllers
                 return NotFound(new { message = ex.Message });
             }
             
->>>>>>> future/exercise_controller
         }
     }
 }
