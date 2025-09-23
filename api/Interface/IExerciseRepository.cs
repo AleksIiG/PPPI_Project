@@ -12,7 +12,7 @@ namespace api.Interface
         Task<List<Exercise>> GetAllAsync();
         Task<Exercise?> GetByIdAsync(string id);
         Task<Exercise?> DeleteAsync(string id);
-        Task<Exercise?> CreateAsync(Exercise exerciseModel);
+        Task<Exercise> CreateAsync(Exercise exerciseModel);
         Task<Exercise?> UpdateAsync(string Id, Exercise exerciseModel);
         Task<bool> ExistsByNameAsync(string name);
     }

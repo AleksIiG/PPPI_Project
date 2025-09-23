@@ -6,6 +6,7 @@ using api.Dto.ExerciseDTOs;
 using api.Interface;
 using api.Mappers;
 using api.Mappers.ExerciseMapper;
+using api.Services.Interfaces;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,42 +17,57 @@ namespace api.Controllers
     public class ExerciseController : ControllerBase
     {
 
-        private readonly IExerciseRepository _exerRepo;
-        public ExerciseController(IExerciseRepository exerRepo)
+        private readonly IExerciseService _exerciseService;
+
+        public ExerciseController(IExerciseService exerciseService)
         {
-            _exerRepo = exerRepo;
+            _exerciseService = exerciseService;
         }
+
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var exercises = await _exerRepo.GetAllAsync();
+            var exercises = await _exerciseService.GetAllAsync();
             var exercisesDto = exercises.Select(e => e.ToExerciseDto()).ToList();
-            return Ok(exercises);
+            return Ok(exercisesDto);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById([FromRoute] string id)
         {
-            var exerciseModel = await _exerRepo.GetByIdAsync(id);
-            if (exerciseModel == null)
+            try
             {
-                return NotFound($"There is no exercise with id: {id}");
+                var exerciseModel = await _exerciseService.GetByIdAsync(id);
+                return Ok(exerciseModel.ToExerciseDto());
             }
-            return Ok(exerciseModel.ToExerciseDto());
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+
+
+            
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete([FromRoute] string id)
         {
-            var exerciseModel = await _exerRepo.DeleteAsync(id);
-
-            if (exerciseModel == null)
+            try
             {
-                return NotFound($"There is no exercise with id: {id}");
+                await _exerciseService.DeleteAsync(id);
+                return NoContent();
             }
-            return NoContent();
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            
         }
+
+
+
+
 
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateExerciseDto exerciseDto)
@@ -59,14 +75,12 @@ namespace api.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
+            var exercise = exerciseDto.ToExerciseFromCreateExerciseDto();
+
+
             try
             {
-                var exercise = exerciseDto.ToExerciseFromCreateExerciseDto();
-                var createdExercise = await _exerRepo.CreateAsync(exercise);
-                if (createdExercise == null)
-                {
-                    return BadRequest();
-                }
+                var createdExercise = await _exerciseService.CreateAsync(exercise);
                 return CreatedAtAction(nameof(GetById), new { id = createdExercise.Id }, createdExercise);
             }
 
@@ -82,20 +96,19 @@ namespace api.Controllers
 
         }
 
+
+
         [HttpPut("{id}")]
         public async Task<IActionResult> Update([FromBody] UpdateExerciseDto exerciseDto, string id)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
+            var exercise = exerciseDto.ToExerciseFromUpdateExerciseDto();
             try
             {
-                // DTO → Model
-                var exercise = exerciseDto.ToExerciseFromUpdateExerciseDto();
-
-                // Service → перевірки та оновлення
-                var updated = await _exerRepo.UpdateAsync(id, exercise);
-
-                // Model → DTO для відповіді
+                var updated = await _exerciseService.UpdateAsync(id, exercise);
+                if (updated == null)
+                    throw new KeyNotFoundException($"Exercise with id {id} not found.");
                 return Ok(updated);
             }
             catch (InvalidOperationException ex)
@@ -103,6 +116,10 @@ namespace api.Controllers
                 return Conflict(new { message = ex.Message });
             }
                 
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
             
         }
     }
