@@ -37,12 +37,18 @@ namespace api.Models
 
         [BsonElement("createdWorkoutsIds")]
         [BsonRepresentation(BsonType.ObjectId)]
-        public List<string> CreatedWorkouts { get; set; } = new();   
+        public List<string> CreatedWorkouts { get; set; } = new();
+
+        [BsonElement("weight")]
+        public double Weight { get; set; }
+
+        [BsonElement("height")]
+        public double Height { get; set; }
+
+        [BsonElement("age")]
+        public int Age { get; set; }
+
         
-        [BsonElement("createdAt")]
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        // TODO: Liked Shablons
-        // TODO: Created Shablons
 
     }
 }

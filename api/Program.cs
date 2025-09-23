@@ -1,6 +1,10 @@
 using api.Data;
 using api.Interface;
 using api.Repesitory;
+
+using api.Services;
+using api.Services.Interfaces;
+
 using dotenv.net;
 
 DotEnv.Load(options: new DotEnvOptions(envFilePaths: new[] { ".env" }));
@@ -15,6 +19,9 @@ builder.Configuration
 // Реєстрація сервісів
 builder.Services.AddSingleton<MongoDbService>();
 builder.Services.AddScoped<IExerciseRepository, ExerciseRepository>();
+
+builder.Services.AddScoped<IExerciseService, ExerciseService>();
+
 
 builder.Services.AddControllers();
 
