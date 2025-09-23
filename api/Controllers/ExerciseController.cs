@@ -110,8 +110,6 @@ namespace api.Controllers
             try
             {
                 var updated = await _exerciseService.UpdateAsync(id, exercise);
-                if (updated == null)
-                    throw new KeyNotFoundException($"Exercise with id {id} not found.");
                 return Ok(updated);
             }
             catch (InvalidOperationException ex)

@@ -67,17 +67,21 @@ namespace api.Services
 
         public async Task<Exercise> UpdateAsync(string id, Exercise exercise)
         {
-            var UpdatedExercise = await _exerciseRepo.GetByIdAsync(id);
-            if (UpdatedExercise == null)
+            var existExercise = await _exerciseRepo.GetByIdAsync(id);
+            if (existExercise == null)
             {
                 throw new KeyNotFoundException($"Exercise with id {id} not found.");
             }
-            if (UpdatedExercise.Name != exercise.Name && await _exerciseRepo.ExistsByNameAsync(exercise.Name))
+            if (existExercise.Name != exercise.Name && await _exerciseRepo.ExistsByNameAsync(exercise.Name))
                 throw new InvalidOperationException($"Exercise with name '{exercise.Name}' already exists.");
 
             exercise.Id = id;
-            await _exerciseRepo.UpdateAsync(id, exercise);
-            return exercise;
+            var exerciseModel = await _exerciseRepo.UpdateAsync(id, exercise);
+            if (exerciseModel == null)
+            {
+                throw new KeyNotFoundException($"Exercise with id {id} not found.");
+            }
+            return exerciseModel;
         }
     }
 }
