@@ -29,7 +29,8 @@ namespace api.Controllers
         public async Task<IActionResult> GetAll()
         {
             var exercises = await _exerciseService.GetAllAsync();
-            var exercisesDto = exercises.Select(e => e.ToExerciseDto()).ToList();
+            var allExerciseTags = await _exerciseService.GetAllExerciseTagsAsync();
+            var exercisesDto = exercises.Select(e => e.ToExerciseDto(allExerciseTags)).ToList();
             return Ok(exercisesDto);
         }
 
@@ -39,7 +40,8 @@ namespace api.Controllers
             try
             {
                 var exerciseModel = await _exerciseService.GetByIdAsync(id);
-                return Ok(exerciseModel.ToExerciseDto());
+                var allExerciseTags = await _exerciseService.GetAllExerciseTagsAsync();
+                return Ok(exerciseModel.ToExerciseDto(allExerciseTags));
             }
             catch (KeyNotFoundException ex)
             {

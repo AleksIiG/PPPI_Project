@@ -3,20 +3,22 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using api.Dto.ExerciseDTOs;
+using api.Dto.ExerTagsDto;
 using api.Models;
 
 namespace api.Mappers.ExerciseMapper
 {
     public static class ExerciseMapper
     {
-        public static ExerciseDto? ToExerciseDto(this Exercise exercise)
+        public static ExerciseDto? ToExerciseDto(this Exercise exercise, List<ExerTagDto> tags)
         {
+            var allTags = tags.Where(tag => exercise.TagsIds.Contains(tag.Id)).ToList();
             return new ExerciseDto
             {
                 Id = exercise.Id ?? string.Empty,
                 Name = exercise.Name,
                 Description = exercise.Description,
-                TagsIds = exercise.TagsIds ?? new List<string>()
+                ExerTags = allTags
             };
         }
 

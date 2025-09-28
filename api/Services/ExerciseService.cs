@@ -1,10 +1,11 @@
+using api.Dto.ExerTagsDto;
+using api.Interface;
+using api.Models;
+using api.Services.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using api.Interface;
-using api.Models;
-using api.Services.Interfaces;
 
 namespace api.Services
 {
@@ -17,11 +18,18 @@ namespace api.Services
         }
         public async Task<Exercise> CreateAsync(Exercise exercise)
         {
+            var nonExistingTags = await _exerciseRepo.GetNonExistingTagsAsync(exercise.TagsIds);
+            var num = nonExistingTags.Count();
+            if (num>0) 
+            {
+                throw new InvalidOperationException("The follow ID dose not exsist.");
+            }
+
             if (await _exerciseRepo.ExistsByNameAsync(exercise.Name))
             {
                 throw new InvalidOperationException($"Exercise '{exercise.Name}' already exists.");
             }
-            // TODO: перевірка тегі
+            
             return await _exerciseRepo.CreateAsync(exercise);
         }
         
@@ -47,6 +55,15 @@ namespace api.Services
         public async Task<List<Exercise>> GetAllAsync()
         {
             return await _exerciseRepo.GetAllAsync();
+        }
+        public async Task<List<ExerTagDto>> GetAllExerciseTagsAsync()
+        {
+            var exerciseTags = await _exerciseRepo.GetAllExerciseTagsAsync();
+            return exerciseTags.Select(tag => new ExerTagDto
+            {
+                Id = tag.Id,
+                Name = tag.Name
+            }).ToList();
         }
 
         public async Task<Exercise> GetByIdAsync(string id)
@@ -74,6 +91,13 @@ namespace api.Services
             }
             if (existingExercise.Name != exercise.Name && await _exerciseRepo.ExistsByNameAsync(exercise.Name))
                 throw new InvalidOperationException($"Exercise with name '{exercise.Name}' already exists.");
+
+            var nonExistingTags = await _exerciseRepo.GetNonExistingTagsAsync(exercise.TagsIds);
+            var num = nonExistingTags.Count();
+            if (num > 0)
+            {
+                throw new InvalidOperationException("The follow ID dose not exsist.");
+            }
 
             exercise.Id = id;
             await _exerciseRepo.UpdateAsync(id, exercise);
