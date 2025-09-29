@@ -18,6 +18,8 @@ builder.Configuration
 builder.Services.AddSingleton<MongoDbService>();
 builder.Services.AddScoped<IExerciseRepository, ExerciseRepository>();
 builder.Services.AddScoped<IExerciseService, ExerciseService>();
+builder.Services.AddScoped<IExerTagRepository, ExerTagRepository>();
+builder.Services.AddScoped<IExerTagService, ExerTagService>();
 
 builder.Services.AddControllers();
 
