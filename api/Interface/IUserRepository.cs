@@ -12,7 +12,7 @@ namespace api.Interface
     {
         Task<List<AppUser>> GetAllAsync();
 
-        Task<AppUser?> GetByIdAsync(string id);
+        Task<AppUser?> GetByEmailAsync(string email);
         Task<AppUser?> DeleteAsync(string id);
         Task<AppUser> CreateAsync(AppUser appUser);
         Task<AppUser?> UpdateAsync(string Id, AppUser appUser);

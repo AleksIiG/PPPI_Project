@@ -19,8 +19,11 @@ builder.Configuration
 // Реєстрація сервісів
 builder.Services.AddSingleton<MongoDbService>();
 builder.Services.AddScoped<IExerciseRepository, ExerciseRepository>();
-
 builder.Services.AddScoped<IExerciseService, ExerciseService>();
+
+builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+
 
 
 builder.Services.AddControllers();

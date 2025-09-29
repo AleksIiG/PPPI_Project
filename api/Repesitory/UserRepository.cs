@@ -41,9 +41,9 @@ namespace api.Repesitory
             return await _database.Users.Find(_ => true).ToListAsync();
         }
 
-        public async Task<AppUser?> GetByIdAsync(string id)
+        public async Task<AppUser?> GetByEmailAsync(string email)
         {
-            return await _database.Users.Find(u => u.Id == id).FirstOrDefaultAsync();
+            return await _database.Users.Find(u => u.Email == email).FirstOrDefaultAsync();
         }
 
         public async Task<AppUser?> UpdateAsync(string Id, AppUser appUser)
