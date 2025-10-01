@@ -6,5 +6,8 @@ namespace api.Interface
 {
     public interface IExerTagRepository
     {
+        Task<List<ExerciseTag>> GetByIdsFromExercisesAsync(IEnumerable<string> tagIds);
+
+        Task<List<string>> GetNonExistingTagsAsync(IEnumerable<string> tagIds);
     }
 }

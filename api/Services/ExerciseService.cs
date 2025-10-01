@@ -12,13 +12,15 @@ namespace api.Services
     public class ExerciseService : IExerciseService
     {
         private readonly IExerciseRepository _exerciseRepo;
-        public ExerciseService(IExerciseRepository exerciseRepo)
+        private readonly IExerTagService _exerTagService;
+        public ExerciseService(IExerciseRepository exerciseRepo, IExerTagService exerTagRepo)
         {
             _exerciseRepo = exerciseRepo;
+            _exerTagService = exerTagRepo;
         }
         public async Task<Exercise> CreateAsync(Exercise exercise)
         {
-            var nonExistingTags = await _exerciseRepo.GetNonExistingTagsAsync(exercise.TagsIds);
+            var nonExistingTags = await _exerTagService.GetNonExistingTagsAsync(exercise.TagsIds);
             var num = nonExistingTags.Count();
             if (num>0) 
             {
@@ -56,15 +58,6 @@ namespace api.Services
         {
             return await _exerciseRepo.GetAllAsync();
         }
-        public async Task<List<ExerTagDto>> GetAllExerciseTagsAsync()
-        {
-            var exerciseTags = await _exerciseRepo.GetAllExerciseTagsAsync();
-            return exerciseTags.Select(tag => new ExerTagDto
-            {
-                Id = tag.Id,
-                Name = tag.Name
-            }).ToList();
-        }
 
         public async Task<Exercise> GetByIdAsync(string id)
         {
@@ -77,10 +70,7 @@ namespace api.Services
             return exercise;
             
         }
-
-
-
-        
+  
 
         public async Task<Exercise> UpdateAsync(string id, Exercise exercise)
         {
@@ -92,7 +82,7 @@ namespace api.Services
             if (existingExercise.Name != exercise.Name && await _exerciseRepo.ExistsByNameAsync(exercise.Name))
                 throw new InvalidOperationException($"Exercise with name '{exercise.Name}' already exists.");
 
-            var nonExistingTags = await _exerciseRepo.GetNonExistingTagsAsync(exercise.TagsIds);
+            var nonExistingTags = await _exerTagService.GetNonExistingTagsAsync(exercise.TagsIds);
             var num = nonExistingTags.Count();
             if (num > 0)
             {

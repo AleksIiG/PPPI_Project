@@ -19,5 +19,28 @@ namespace api.Repesitory
         {
             _database = database;
         }
+
+        public async Task<List<ExerciseTag>> GetByIdsFromExercisesAsync(IEnumerable<string> tagIds)
+        {
+            var tagIdsList = tagIds.ToList();
+            var objectIds = tagIdsList.Select(id => ObjectId.Parse(id)).ToList();
+            var filter = Builders<ExerciseTag>.Filter.In("_id", objectIds);
+
+            return await _database.ExerciseTags
+                .Find(filter)
+                .ToListAsync();
+        }
+
+        public async Task<List<string>> GetNonExistingTagsAsync(IEnumerable<string> tagIds)
+        {
+            var tagIdsList = tagIds.ToList();
+            var objectIds = tagIds.Select(id => ObjectId.Parse(id)).ToList();
+            var filter = Builders<ExerciseTag>.Filter.In("_id", objectIds);
+
+            return await _database.ExerciseTags
+                .Find(filter)
+                .Project(t => t.Id.ToString())
+                .ToListAsync();
+        }
     }
 }

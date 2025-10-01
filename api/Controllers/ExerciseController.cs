@@ -18,10 +18,12 @@ namespace api.Controllers
     {
 
         private readonly IExerciseService _exerciseService;
+        private readonly IExerTagService _exerTagService;
 
-        public ExerciseController(IExerciseService exerciseService)
+        public ExerciseController(IExerciseService exerciseService, IExerTagService exerTagService)
         {
             _exerciseService = exerciseService;
+            _exerTagService = exerTagService;
         }
 
 
@@ -29,8 +31,28 @@ namespace api.Controllers
         public async Task<IActionResult> GetAll()
         {
             var exercises = await _exerciseService.GetAllAsync();
-            var allExerciseTags = await _exerciseService.GetAllExerciseTagsAsync();
-            var exercisesDto = exercises.Select(e => e.ToExerciseDto(allExerciseTags)).ToList();
+
+            // ✅ Отримуємо всі унікальні ID тегів
+            var allTagIds = exercises
+                .SelectMany(e => e.TagsIds)
+                .Distinct()
+                .ToList();
+
+            // ✅ Викликаємо сервіс тегів
+            var tags = await _exerTagService.GetByIdsFromExercisesAsync(allTagIds);
+            var tagDict = tags.ToDictionary(t => t.Id);
+
+            // ✅ Маппимо кожну вправу з її тегами
+            var exercisesDto = exercises.Select(e =>
+            {
+                var exerciseTags = e.TagsIds
+                    .Where(id => tagDict.ContainsKey(id))
+                    .Select(id => tagDict[id])
+                    .ToList();
+
+                return e.ToExerciseDto(exerciseTags);
+            }).ToList();
+
             return Ok(exercisesDto);
         }
 
@@ -39,9 +61,12 @@ namespace api.Controllers
         {
             try
             {
-                var exerciseModel = await _exerciseService.GetByIdAsync(id);
-                var allExerciseTags = await _exerciseService.GetAllExerciseTagsAsync();
-                return Ok(exerciseModel.ToExerciseDto(allExerciseTags));
+                var exercise = await _exerciseService.GetByIdAsync(id);
+
+                // ✅ Отримуємо тільки потрібні теги
+                var tags = await _exerTagService.GetByIdsFromExercisesAsync(exercise.TagsIds);
+
+                return Ok(exercise.ToExerciseDto(tags));
             }
             catch (KeyNotFoundException ex)
             {
@@ -49,7 +74,7 @@ namespace api.Controllers
             }
 
 
-            
+
         }
 
         [HttpDelete("{id}")]

@@ -12,13 +12,12 @@ namespace api.Mappers.ExerciseMapper
     {
         public static ExerciseDto? ToExerciseDto(this Exercise exercise, List<ExerTagDto> tags)
         {
-            var allTags = tags.Where(tag => exercise.TagsIds.Contains(tag.Id)).ToList();
             return new ExerciseDto
             {
                 Id = exercise.Id ?? string.Empty,
                 Name = exercise.Name,
                 Description = exercise.Description,
-                ExerTags = allTags
+                ExerTags = tags
             };
         }
 

@@ -14,6 +14,6 @@ namespace api.Services.Interfaces
         Task<Exercise> CreateAsync(Exercise exercise);
         Task<Exercise> UpdateAsync(string id, Exercise exercise);
         Task<Exercise?> DeleteAsync(string id);
-        Task<List<ExerTagDto>> GetAllExerciseTagsAsync();
+        
     }
 }
