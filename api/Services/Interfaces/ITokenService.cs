@@ -9,5 +9,6 @@ namespace api.Services.Interfaces
     public interface ITokenService
     {
         string CreateAccessToken(AppUser appuser);
+        RefreshToken CreateRefreshToken(string ipAddress);
     }
 }

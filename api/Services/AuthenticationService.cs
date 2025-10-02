@@ -11,14 +11,37 @@ namespace api.Services
     public class AuthenticationService : IAuthenticationService
     {
         private readonly IUserRepository _userRepo;
-        public AuthenticationService(IUserRepository userRepo)
+        private readonly IUSerService _userService;
+        private readonly ITokenService _tokenService;
+
+
+        public AuthenticationService(IUserRepository userRepo, IUSerService userService, ITokenService tokenService)
         {
             _userRepo = userRepo;
+            _userService = userService;
+            _tokenService = tokenService;
         }
 
-        public Task<string> Register(AppUser appuser)
+        public async Task<(string token, RefreshToken RefreshToken)> RegisterAsync(AppUser appUser, string ipAddress)
         {
-            throw new NotImplementedException();
+            var existingUser = await _userService.UserExistsAsync(appUser);
+            if (existingUser)
+            {
+                throw new InvalidOperationException($"User with email {appUser.Email} already exists.");
+            }
+
+            var token = _tokenService.CreateAccessToken(appUser);
+            var RefreshToken = _tokenService.CreateRefreshToken(ipAddress);
+
+            appUser.RefreshTokens.Add(RefreshToken);
+            await _userRepo.CreateAsync(appUser);
+
+            
+
+            return (token, RefreshToken);
+
         }
+
+        
     }
 }

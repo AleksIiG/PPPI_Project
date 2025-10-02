@@ -25,9 +25,10 @@ namespace api.Mappers.UserMapper
         {
             return new AppUser
             {
+                Id = registerUserDto.Id,
                 Username = registerUserDto.Username,
                 Email = registerUserDto.Email,
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(registerUserDto.PasswordHash)
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(registerUserDto.Password)
             };
         }
     }

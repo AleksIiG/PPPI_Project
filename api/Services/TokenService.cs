@@ -47,6 +47,25 @@ namespace api.Services
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
+        public RefreshToken CreateRefreshToken(string ipAddress)
+        {
+            var randomNumber = new byte[32];
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(randomNumber);
+                var token = Convert.ToBase64String(randomNumber);
+
+                return new RefreshToken
+                {
+                    Token = token,
+                    Expires = DateTime.UtcNow.AddDays(_jwtExpires),
+                    Created = DateTime.UtcNow,
+                    CreatedByIp = ipAddress,
+                    IsRevoked = false
+                };
+            }
+        }
+
         
     }
 }

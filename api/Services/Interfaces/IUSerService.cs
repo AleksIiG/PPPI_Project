@@ -6,8 +6,8 @@ using api.Models;
 
 namespace api.Services.Interfaces
 {
-    public interface IAuthenticationService
+    public interface IUSerService
     {
-        public Task<(string token, RefreshToken RefreshToken)> RegisterAsync(AppUser appUser, string ipAddress);
+        public Task<bool> UserExistsAsync(AppUser appUser);
     }
 }

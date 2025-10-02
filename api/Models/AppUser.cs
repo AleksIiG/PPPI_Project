@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
@@ -30,7 +28,6 @@ namespace api.Models
         [StringLength(100, MinimumLength = 6, ErrorMessage = "Password must be at least 6 characters.")]
         public string PasswordHash { get; set; } = string.Empty;
 
-
         [BsonElement("likedWorkoutsIds")]
         [BsonRepresentation(BsonType.ObjectId)]
         public List<string> LikedWorkouts { get; set; } = new();
@@ -51,8 +48,8 @@ namespace api.Models
         [BsonElement("role")]
         public string Role { get; set; } = "User"; // "User", "Admin"
 
-
-        
-
+        // 🔑 Додаємо RefreshTokens
+        [BsonElement("refreshTokens")]
+        public List<RefreshToken> RefreshTokens { get; set; } = new();
     }
 }
