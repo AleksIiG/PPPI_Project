@@ -13,5 +13,15 @@ namespace api.Services.Interfaces
         Task<List<ExerTagDto>> GetByIdsFromExercisesAsync(IEnumerable<string> tagIds);
 
         Task<List<string>> GetNonExistingTagsAsync(IEnumerable<string> tagIds);
+
+        Task<List<ExerciseTag>> GetAllAsync();
+
+        Task<ExerciseTag> GetByIdAsync(string id);
+
+        Task<ExerciseTag> CreateAsync(ExerciseTag exerciseTag);
+
+        Task<ExerciseTag> UpdateAsync(ExerciseTag exerciseTag, string id);
+
+        Task<ExerciseTag> DeleteAsync(string id);
     }
 }

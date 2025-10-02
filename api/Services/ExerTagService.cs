@@ -36,5 +36,38 @@ namespace api.Services
             var existingTagIds = await _exerTagRepo.GetNonExistingTagsAsync(tagIdsList);
             return tagIdsList.Except(existingTagIds).ToList();
         }
+
+        public async Task<List<ExerciseTag>> GetAllAsync()
+        {
+            return await _exerTagRepo.GetAllAsync();
+        }
+
+        public async Task<ExerciseTag> GetByIdAsync(string id)
+        {
+            return await _exerTagRepo.GetByIdAsync(id);
+        }
+
+        public async Task<ExerciseTag> CreateAsync(ExerciseTag exerciseTag)
+        {
+            return await _exerTagRepo.CreateAsync(exerciseTag);
+        }
+
+        public async Task<ExerciseTag> UpdateAsync(ExerciseTag exerciseTag, string id)
+        {
+            exerciseTag.Id = id;
+            await _exerTagRepo.UpdateAsync(exerciseTag, id);
+            return exerciseTag;
+        }
+
+        public async Task<ExerciseTag> DeleteAsync(string id) 
+        {
+            var exist = await _exerTagRepo.GetByIdAsync(id);
+            if (exist == null) 
+            {
+                throw new KeyNotFoundException($"Tag with id: {id} is not found.");
+            }
+
+            return await _exerTagRepo.DeleteAsync(id);
+        }
     }
 }

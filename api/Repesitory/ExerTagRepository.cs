@@ -42,5 +42,42 @@ namespace api.Repesitory
                 .Project(t => t.Id.ToString())
                 .ToListAsync();
         }
+
+        public async Task<List<ExerciseTag>> GetAllAsync()
+        {
+            return await _database.ExerciseTags.Find(_ => true).ToListAsync();
+        }
+
+        public async Task<ExerciseTag?> GetByIdAsync(string id)
+        {
+            return await _database.ExerciseTags.Find(t => t.Id == id).FirstOrDefaultAsync();
+        }
+
+        public async Task<ExerciseTag> CreateAsync(ExerciseTag exerciseTag)
+        {
+            await _database.ExerciseTags.InsertOneAsync(exerciseTag);
+            return exerciseTag;
+        }
+
+        public async Task<ExerciseTag> UpdateAsync(ExerciseTag exerModel, string id)
+        {
+            var updated = await _database.ExerciseTags.ReplaceOneAsync(t => t.Id == id, exerModel);
+            if (updated == null)
+            {
+                return null;
+            }
+            return exerModel;
+        }
+
+        public async Task<ExerciseTag> DeleteAsync(string id)
+        {
+            var tag = await _database.ExerciseTags.Find(t=>t.Id==id).FirstOrDefaultAsync();
+            if (tag == null)
+            {
+                return null;
+            }
+            await _database.ExerciseTags.DeleteOneAsync(t => t.Id == id);
+            return tag;
+        }
     }
 }
