@@ -16,6 +16,7 @@ namespace api.Interface
         Task<AppUser?> DeleteAsync(string id);
         Task<AppUser> CreateAsync(AppUser appUser);
         Task<AppUser?> UpdateAsync(string Id, AppUser appUser);
+        public Task<AppUser?> GetByRefreshAsync(string refreshToken);
 
     }
 }

@@ -9,5 +9,6 @@ namespace api.Services.Interfaces
     public interface IAuthenticationService
     {
         public Task<(string token, RefreshToken RefreshToken)> RegisterAsync(AppUser appUser, string ipAddress);
+        public Task LogoutByRefreshToken(string refreshToken, string ipAddress);
     }
 }

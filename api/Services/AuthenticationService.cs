@@ -36,10 +36,30 @@ namespace api.Services
             appUser.RefreshTokens.Add(RefreshToken);
             await _userRepo.CreateAsync(appUser);
 
-            
+
 
             return (token, RefreshToken);
 
+        }
+
+        public async Task LogoutByRefreshToken(string refreshToken, string ipAddress)
+        {
+            var appUser = await _userRepo.GetByRefreshAsync(refreshToken);
+            if (appUser == null)
+            {
+                throw new KeyNotFoundException("Invalid refresh token.");
+            }
+
+            var token = appUser.RefreshTokens.FirstOrDefault(t => t.Token == refreshToken && !t.IsRevoked);
+            if (token != null)
+            {
+                token.IsRevoked = true;
+                token.Revoked = DateTime.UtcNow;
+                token.RevokedByIp = ipAddress;
+
+                var result = await _userRepo.UpdateAsync(appUser.Id, appUser)
+                    ?? throw new Exception("Failed to update user during logout.");
+            }
         }
 
         

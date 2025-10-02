@@ -55,5 +55,10 @@ namespace api.Repesitory
             }
             return appUser;
         }
+
+        public async Task<AppUser?> GetByRefreshAsync(string refreshToken)
+        {
+            return await _database.Users.Find(u => u.RefreshTokens.Any(t => t.Token == refreshToken)).FirstOrDefaultAsync();
+        }
     }
 }
