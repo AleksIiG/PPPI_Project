@@ -46,6 +46,10 @@ namespace api.Repesitory
             return await _database.Users.Find(u => u.Email == email).FirstOrDefaultAsync();
         }
 
+        public async Task<AppUser?> GetByIdAsync(string id)
+        {
+            return await _database.Users.Find(u => u.Id == id).FirstOrDefaultAsync();
+        }
         public async Task<AppUser?> UpdateAsync(string Id, AppUser appUser)
         {
             var result = await _database.Users.ReplaceOneAsync(e => e.Id == Id, appUser);

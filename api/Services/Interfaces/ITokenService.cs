@@ -11,5 +11,6 @@ namespace api.Services.Interfaces
         string CreateAccessToken(AppUser appuser);
         RefreshToken CreateRefreshToken(string ipAddress);
         public void RemoveRefreshTokens(AppUser appUser);
+        public void RemoveALLRefreshTokens(AppUser appUser);
     }
 }

@@ -111,6 +111,23 @@ namespace api.Services
             return (newAccessToken, newRefreshToken);
         }
 
-        
+
+        public async Task LogoutAllAsync(string userId)
+        {
+            var existingUser = await _userRepo.GetByIdAsync(userId);
+            if (existingUser == null)
+            {
+                throw new KeyNotFoundException("User not found.");
+            }
+
+            _tokenService.RemoveALLRefreshTokens(existingUser);
+            
+            var result = await _userRepo.UpdateAsync(existingUser.Id, existingUser);
+            if (result == null)
+            {
+                throw new Exception("Failed to update user during logout all.");
+            }
+        }
+
     }
 }

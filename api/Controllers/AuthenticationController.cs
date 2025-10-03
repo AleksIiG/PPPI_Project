@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading.Tasks;
 using api.Data;
@@ -8,6 +9,7 @@ using api.Dto.UserDTOs;
 using api.Interface;
 using api.Mappers.UserMapper;
 using api.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using MongoDB.Driver;
@@ -19,11 +21,10 @@ namespace api.Controllers
     public class AuthenticationController : ControllerBase
     {
         private readonly IAuthenticationService _authService;
-        private readonly IUserRepository _userRepo;
+
         public AuthenticationController(IAuthenticationService authService, IUserRepository userRepo)
         {
             _authService = authService;
-            _userRepo = userRepo;
         }
 
         [HttpPost("register")]
@@ -52,6 +53,7 @@ namespace api.Controllers
         }
 
         [HttpPost("logout")]
+        [Authorize]
         public async Task<IActionResult> Logout([FromBody] LogoutDto logoutDto)
         {
             try
@@ -101,6 +103,7 @@ namespace api.Controllers
 
 
         [HttpPost("refresh-token")]
+        [Authorize]
         public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenDto refreshTokenDto)
         {
             if (string.IsNullOrEmpty(refreshTokenDto.RefreshToken))
@@ -131,10 +134,25 @@ namespace api.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
-        
+
+        [HttpPost("logout-all")]
+        [Authorize]
+        public async Task<IActionResult> LogoutAll()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized(new { message = "User not authenticated." });
+            }
+
+            await _authService.LogoutAllAsync(userId);
+
+            return Ok(new { message = "Logged out from all devices." });
+        }
 
 
 
-        //TODO: Rename a folders in DTOs and Mappers
+
+
     }
 }

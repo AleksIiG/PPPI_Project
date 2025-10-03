@@ -71,6 +71,10 @@ namespace api.Services
             appUser.RefreshTokens.RemoveAll(t => t.Expires <= DateTime.UtcNow || t.IsRevoked);
         }
 
+        public void RemoveALLRefreshTokens(AppUser appUser)
+        {
+            appUser.RefreshTokens.RemoveAll(_ => true);
+        }
         
     }
 }
