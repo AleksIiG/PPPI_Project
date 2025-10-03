@@ -15,12 +15,12 @@ using MongoDB.Driver;
 namespace api.Controllers
 {
     [ApiController]
-    [Route("api/users")]
+    [Route("api/auth")]
     public class AuthenticationController : ControllerBase
     {
         private readonly IAuthenticationService _authService;
         private readonly IUserRepository _userRepo;
-        public AuthenticationController(IAuthenticationService authService, IUserRepository userRepo) 
+        public AuthenticationController(IAuthenticationService authService, IUserRepository userRepo)
         {
             _authService = authService;
             _userRepo = userRepo;
@@ -51,7 +51,7 @@ namespace api.Controllers
             }
         }
 
-        [HttpPut("logout")]
+        [HttpPost("logout")]
         public async Task<IActionResult> Logout([FromBody] LogoutDto logoutDto)
         {
             try
@@ -62,12 +62,79 @@ namespace api.Controllers
                 }
                 var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
                 await _authService.LogoutByRefreshToken(logoutDto.RefreshToken, ipAddress);
-                return Ok(new { message = "Logout successful." } );
+                return Ok(new { message = "Logout successful." });
             }
             catch (Exception ex)
             {
                 return BadRequest(new { message = ex.Message });
             }
         }
+
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginUserDto loginUserDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var result = await _authService.LoginAsync(loginUserDto.ToAppUserFromLoginDto(), HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown");
+                return Ok(new
+                {
+                    accessToken = result.token,
+                    refreshToken = result.RefreshToken.Token
+                });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+
+        }
+
+
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenDto refreshTokenDto)
+        {
+            if (string.IsNullOrEmpty(refreshTokenDto.RefreshToken))
+            {
+                return BadRequest(new { message = "Refresh token is required." });
+            }
+
+            var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+            try
+            {
+                var result = await _authService.RefreshTokenAsync(refreshTokenDto.RefreshToken, ipAddress);
+                return Ok(new
+                {
+                    accessToken = result.token,
+                    refreshToken = result.RefreshToken.Token
+                });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+        
+
+
+
+        //TODO: Rename a folders in DTOs and Mappers
     }
 }
