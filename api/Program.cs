@@ -22,6 +22,8 @@ builder.Services.AddScoped<IExerTagRepository, ExerTagRepository>();
 builder.Services.AddScoped<IExerTagService, ExerTagService>();
 builder.Services.AddScoped<IWorkoutTagRepository, WorkoutTagRepository>();
 builder.Services.AddScoped<IWorkoutTagService, WorkoutTagService>();
+builder.Services.AddScoped<IWorkoutRepository, WorkoutRepository>();
+builder.Services.AddScoped<IWorkoutService, WorkoutService>();
 
 builder.Services.AddControllers();
 

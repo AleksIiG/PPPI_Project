@@ -1,5 +1,5 @@
 ﻿using api.Dto.ExerTagsDto;
-using api.Dto.WorkoutTagDto;
+using api.Dto.WorkoutTagDtos;
 using api.Models;
 using System;
 using System.Collections.Generic;

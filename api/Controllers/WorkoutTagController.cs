@@ -1,4 +1,4 @@
-﻿using api.Dto.WorkoutTagDto;
+﻿using api.Dto.WorkoutTagDtos;
 using api.Mappers.WorkoutMapper;
 using api.Services;
 using api.Services.Interfaces;

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace api.Dto.WorkoutTagDto
+namespace api.Dto.WorkoutTagDtos
 {
     public class CreateWorkoutTagDto
     {

@@ -9,5 +9,10 @@ namespace api.Services.Interfaces
 {
     public interface IWorkoutService
     {
+        Task<List<Workout>> GetAllAsync();
+        Task<Workout> GetByIdAsync(string id);
+        Task<Workout> CreateAsync(Workout workout);
+        Task<Workout> UpdateAsync(string id, Workout workout);
+        Task<Workout?> DeleteAsync(string id);
     }
 }

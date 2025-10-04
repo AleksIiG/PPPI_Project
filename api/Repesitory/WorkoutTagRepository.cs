@@ -1,5 +1,5 @@
 ﻿using api.Data;
-using api.Dto.WorkoutTagDto;
+using api.Dto.WorkoutTagDtos;
 using api.Interface;
 using api.Models;
 using MongoDB.Bson;

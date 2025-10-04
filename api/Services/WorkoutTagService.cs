@@ -1,6 +1,6 @@
 ﻿using api.Dto;
 using api.Dto.ExerTagsDto;
-using api.Dto.WorkoutTagDto;
+using api.Dto.WorkoutTagDtos;
 using api.Interface;
 using api.Models;
 using api.Services.Interfaces;

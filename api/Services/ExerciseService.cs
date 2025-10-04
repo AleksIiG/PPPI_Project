@@ -1,5 +1,7 @@
+using api.Dto.ExerciseDTOs;
 using api.Dto.ExerTagsDto;
 using api.Interface;
+using api.Mappers.ExerciseMapper;
 using api.Models;
 using api.Services.Interfaces;
 using System;
@@ -51,7 +53,41 @@ namespace api.Services
 
         }
 
+        public async Task<List<ExerciseDto>> GetByIdsFromWorkoutsAsync(IEnumerable<string> exerciseIds)
+        {
+            var exerciseIdsList = exerciseIds.ToList();
+            var exercises = new List<Exercise>();
 
+            // Отримуємо всі вправи
+            foreach (var id in exerciseIdsList)
+            {
+                var exercise = await _exerciseRepo.GetByIdAsync(id);
+                if (exercise != null)
+                {
+                    exercises.Add(exercise);
+                }
+            }
+
+            // Отримуємо всі теги для цих вправ
+            var allTagIds = exercises
+                .SelectMany(e => e.TagsIds)
+                .Distinct()
+                .ToList();
+
+            var tags = await _exerTagService.GetByIdsFromExercisesAsync(allTagIds);
+            var tagDict = tags.ToDictionary(t => t.Id);
+
+            // Маппимо кожну вправу з її тегами
+            return exercises.Select(e =>
+            {
+                var exerciseTags = e.TagsIds
+                    .Where(id => tagDict.ContainsKey(id))
+                    .Select(id => tagDict[id])
+                    .ToList();
+
+                return e.ToExerciseDto(exerciseTags);
+            }).ToList();
+        }
 
 
         public async Task<List<Exercise>> GetAllAsync()
