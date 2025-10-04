@@ -29,6 +29,18 @@ namespace api.Mappers.UserMapper
                 PasswordHash = loginUserDto.Password
             };
         }
+
+        public static UserDto? ToUserDto(this AppUser appUser)
+        {
+            if (appUser.Id == null) return null;
+            return new UserDto
+            {
+                Id = appUser.Id,
+                Email = appUser.Email,
+                UserName = appUser.Username,
+                Role = appUser.Role
+            };
+        }
     }
     
 }

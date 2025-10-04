@@ -20,5 +20,15 @@ namespace api.Services
         {
             return await _userRepo.GetByEmailAsync(appUser.Email) != null;
         }
+
+        public async Task<AppUser> GetCurrentUserByIdAsync(string id)
+        {
+            var user = await _userRepo.GetByIdAsync(id);
+            if (user == null)
+            {
+                throw new KeyNotFoundException($"User with id {id} not found.");
+            }
+            return user;
+        }
     }
 }
