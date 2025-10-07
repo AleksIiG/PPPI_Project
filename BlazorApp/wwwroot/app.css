@@ -50,6 +50,7 @@ h1:focus {
     border-color: #929292;
 }
 
+
 @font-face {
     font-family: 'Jaro';
     src: url('/fonts/Jaro/static/Jaro-Regular.ttf') format('truetype');
