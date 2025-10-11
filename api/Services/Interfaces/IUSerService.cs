@@ -10,5 +10,7 @@ namespace api.Services.Interfaces
     {
         public Task<bool> UserExistsAsync(AppUser appUser);
         public Task<AppUser> GetCurrentUserByIdAsync(string id);
+        public Task<List<AppUser>> GetAllUsersAsync();
+        public Task UpdateUserASync(string id, AppUser user);
     }
 }

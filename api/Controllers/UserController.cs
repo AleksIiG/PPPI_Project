@@ -28,9 +28,9 @@ namespace api.Controllers
 
         [HttpGet("me")]
         [Authorize]
-        public async Task<ActionResult> GetCurrentUser()
+        public async Task<IActionResult> GetCurrentUser()
         {
-            var id = User.FindFirst("id")?.Value;
+            var id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (id == null) return Unauthorized(new { message = "User ID not found in token." });
             try
             {
@@ -40,6 +40,48 @@ namespace api.Controllers
             catch (KeyNotFoundException ex)
             {
                 return new NotFoundObjectResult(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return new ObjectResult(new { message = ex.Message }) { StatusCode = 500 };
+            }
+        }
+
+        [HttpGet("admin/all")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetAllUsers()
+        {
+            try
+            {
+                var users = await _userService.GetAllUsersAsync();
+                var userDtos = users.Select(u => u.ToUserDto()).ToList();
+                return Ok(userDtos);
+            }
+            catch (Exception ex)
+            {
+                return new ObjectResult(new { message = ex.Message }) { StatusCode = 500 };
+            }
+        }
+
+        [HttpPut("admin/promoteToAdmin/{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> PromoteToAdmin([FromRoute] string id)
+        {
+            try
+
+            {
+                var user = await _userService.GetCurrentUserByIdAsync(id);
+                if (user == null)
+                {
+                    return NotFound(new { message = $"User with id {id} not found." });
+                }
+                user.Role = "Admin";
+                await _userService.UpdateUserASync(id, user);
+                return Ok(new { message = $"User with id {id} promoted to Admin." });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
             }
             catch (Exception ex)
             {

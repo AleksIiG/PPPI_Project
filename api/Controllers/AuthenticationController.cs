@@ -103,7 +103,7 @@ namespace api.Controllers
 
 
         [HttpPost("refresh-token")]
-        [Authorize]
+        
         public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenDto refreshTokenDto)
         {
             if (string.IsNullOrEmpty(refreshTokenDto.RefreshToken))
@@ -149,6 +149,8 @@ namespace api.Controllers
 
             return Ok(new { message = "Logged out from all devices." });
         }
+
+        
 
 
 

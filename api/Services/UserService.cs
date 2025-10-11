@@ -30,5 +30,15 @@ namespace api.Services
             }
             return user;
         }
+
+        public async Task<List<AppUser>> GetAllUsersAsync()
+        {
+            return await _userRepo.GetAllAsync();
+        }
+
+        public async Task UpdateUserASync(string id, AppUser user)
+        {
+            await _userRepo.UpdateAsync(id, user);
+        }
     }
 }
