@@ -1,4 +1,5 @@
 ﻿using api.Dto.WorkoutDto;
+using api.Helpers;
 using api.Interface;
 using api.Mappers;
 using api.Mappers.WorkoutMapper;
@@ -30,9 +31,9 @@ namespace api.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] QueryObjectForWorkouts query)
         {
-            var workouts = await _workoutService.GetAllAsync();
+            var workouts = await _workoutService.GetAllAsync(query);
 
             // Отримуємо всі унікальні ID тегів тренувань
             var allTagIds = workouts
@@ -49,6 +50,15 @@ namespace api.Controllers
             // Викликаємо сервіси (як в ExerciseController)
             var workoutTags = await _workoutTagService.GetByIdsFromWorkoutsAsync(allTagIds);
             var workoutTagDict = workoutTags.ToDictionary(t => t.Id);
+
+            if (!string.IsNullOrEmpty(query.TagName))
+            {
+                var matchedIds = workoutTags
+                    .Where(t => string.Equals(t.Name, query.TagName, StringComparison.OrdinalIgnoreCase))
+                    .Select(t => t.Id)
+                    .ToHashSet();
+                workouts = workouts.Where(w => w.TagsIds.Any(id => matchedIds.Contains(id))).ToList();
+            }
 
             var exercises = await _exerciseService.GetByIdsFromWorkoutsAsync(allExerciseIds);
             var exerciseDict = exercises.ToDictionary(e => e.Id);

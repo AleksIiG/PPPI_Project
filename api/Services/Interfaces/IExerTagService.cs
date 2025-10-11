@@ -1,5 +1,6 @@
 ﻿using api.Dto;
 using api.Dto.ExerTagsDto;
+using api.Helpers;
 using api.Models;
 using System;
 using System.Collections.Generic;
@@ -12,9 +13,10 @@ namespace api.Services.Interfaces
     {
         Task<List<ExerTagDto>> GetByIdsFromExercisesAsync(IEnumerable<string> tagIds);
 
+        Task<List<ExerTagDto>> GetByIdsFromExercisesAsync(IEnumerable<string> tagIds, QueryObjectForExercises query);
         Task<List<string>> GetNonExistingTagsAsync(IEnumerable<string> tagIds);
 
-        Task<List<ExerciseTag>> GetAllAsync();
+        Task<List<ExerciseTag>> GetAllAsync(QueryObjectForTags query);
 
         Task<ExerciseTag> GetByIdAsync(string id);
 

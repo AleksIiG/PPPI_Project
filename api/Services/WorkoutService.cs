@@ -1,4 +1,5 @@
 ﻿using api.Dto.ExerTagsDto;
+using api.Helpers;
 using api.Interface;
 using api.Models;
 using api.Services.Interfaces;
@@ -63,9 +64,9 @@ namespace api.Services
             return await _workoutRepo.DeleteAsync(id);
         }
 
-        public async Task<List<Workout>> GetAllAsync()
+        public async Task<List<Workout>> GetAllAsync(QueryObjectForWorkouts  query)
         {
-            return await _workoutRepo.GetAllAsync();
+            return await _workoutRepo.GetAllAsync(query);
         }
 
         public async Task<Workout> GetByIdAsync(string id)

@@ -1,5 +1,6 @@
 ﻿using api.Data;
 using api.Dto.WorkoutTagDtos;
+using api.Helpers;
 using api.Interface;
 using api.Models;
 using MongoDB.Bson;
@@ -31,6 +32,7 @@ namespace api.Repesitory
                 .ToListAsync();
         }
 
+
         public async Task<List<string>> GetNonExistingTagsAsync(IEnumerable<string> tagIds)
         {
             var tagIdsList = tagIds.ToList();
@@ -43,9 +45,14 @@ namespace api.Repesitory
                 .ToListAsync();
         }
 
-        public async Task<List<WorkoutTag>> GetAllAsync()
+        public async Task<List<WorkoutTag>> GetAllAsync(QueryObjectForTags query)
         {
-            return await _database.WorkoutTags.Find(_ => true).ToListAsync();
+            var filter = Builders<WorkoutTag>.Filter.Empty;
+            if (!string.IsNullOrEmpty(query.Name))
+            {
+                filter &= Builders<WorkoutTag>.Filter.Eq(t => t.Name, query.Name);
+            }
+            return await _database.WorkoutTags.Find(filter).ToListAsync();
         }
 
         public async Task<WorkoutTag?> GetByIdAsync(string id)

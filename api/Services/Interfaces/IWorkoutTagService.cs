@@ -1,5 +1,6 @@
 ﻿using api.Dto.ExerTagsDto;
 using api.Dto.WorkoutTagDtos;
+using api.Helpers;
 using api.Models;
 using System;
 using System.Collections.Generic;
@@ -11,10 +12,9 @@ namespace api.Services.Interfaces
     public interface IWorkoutTagService
     {
         Task<List<WorkoutTagDto>> GetByIdsFromWorkoutsAsync(IEnumerable<string> tagIds);
-
         Task<List<string>> GetNonExistingTagsAsync(IEnumerable<string> tagIds);
 
-        Task<List<WorkoutTag>> GetAllAsync();
+        Task<List<WorkoutTag>> GetAllAsync(QueryObjectForTags query);
 
         Task<WorkoutTag> GetByIdAsync(string id);
 

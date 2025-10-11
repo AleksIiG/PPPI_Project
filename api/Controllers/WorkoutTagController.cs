@@ -1,4 +1,5 @@
 ﻿using api.Dto.WorkoutTagDtos;
+using api.Helpers;
 using api.Mappers.WorkoutMapper;
 using api.Services;
 using api.Services.Interfaces;
@@ -24,13 +25,13 @@ namespace api.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllAsync()
+        public async Task<IActionResult> GetAllAsync([FromQuery] QueryObjectForTags query)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            var tags = await _workoutTagService.GetAllAsync();
+            var tags = await _workoutTagService.GetAllAsync(query);
             if (tags == null)
             {
                 return NotFound();

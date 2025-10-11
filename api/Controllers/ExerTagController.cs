@@ -1,5 +1,6 @@
 ﻿using Amazon.Util;
 using api.Dto.ExerTagsDto;
+using api.Helpers;
 using api.Interface;
 using api.Mappers;
 using api.Mappers.ExerTagMapper;
@@ -28,13 +29,13 @@ namespace api.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllAsync()
+        public async Task<IActionResult> GetAllAsync([FromQuery] QueryObjectForTags query)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            var tags = await _exerTagService.GetAllAsync();
+            var tags = await _exerTagService.GetAllAsync(query);
             if (tags == null)
             {
                 return NotFound();

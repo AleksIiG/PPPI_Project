@@ -1,5 +1,6 @@
 ﻿using api.Data;
 using api.Dto.WorkoutDto;
+using api.Helpers;
 using api.Interface;
 using api.Models;
 using MongoDB.Bson;
@@ -20,9 +21,14 @@ namespace api.Repesitory
             _database = database;
         }
 
-        public async Task<List<Workout>> GetAllAsync()
+        public async Task<List<Workout>> GetAllAsync(QueryObjectForWorkouts query)
         {
-            return await _database.Workouts.Find(_ => true).ToListAsync();
+            var filter = Builders<Workout>.Filter.Empty;
+            if (!string.IsNullOrEmpty(query.Name))
+            {
+                filter &= Builders<Workout>.Filter.Eq(w=>w.Name, query.Name);
+            }
+            return await _database.Workouts.Find(filter).ToListAsync();
         }
 
         public async Task<Workout?> GetByIdAsync(string id)

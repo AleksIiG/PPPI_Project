@@ -1,6 +1,7 @@
 ﻿using api.Dto;
 using api.Dto.ExerTagsDto;
 using api.Dto.WorkoutTagDtos;
+using api.Helpers;
 using api.Interface;
 using api.Models;
 using api.Services.Interfaces;
@@ -38,9 +39,9 @@ namespace api.Services
             return tagIdsList.Except(existingTagIds).ToList();
         }
 
-        public async Task<List<WorkoutTag>> GetAllAsync()
+        public async Task<List<WorkoutTag>> GetAllAsync(QueryObjectForTags query)
         {
-            return await _workoutTagRepo.GetAllAsync();
+            return await _workoutTagRepo.GetAllAsync(query);
         }
 
         public async Task<WorkoutTag> GetByIdAsync(string id)

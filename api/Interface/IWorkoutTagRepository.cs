@@ -1,4 +1,5 @@
-﻿using api.Models;
+﻿using api.Helpers;
+using api.Models;
 
 namespace api.Interface
 {
@@ -8,7 +9,7 @@ namespace api.Interface
 
         Task<List<string>> GetNonExistingTagsAsync(IEnumerable<string> tagIds);
 
-        Task<List<WorkoutTag>> GetAllAsync();
+        Task<List<WorkoutTag>> GetAllAsync(QueryObjectForTags query);
         Task<WorkoutTag?> GetByIdAsync(string id);
 
         Task<WorkoutTag> CreateAsync(WorkoutTag workoutTag);

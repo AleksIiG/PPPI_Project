@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using api.Dto.ExerciseDTOs;
+using api.Helpers;
 using api.Interface;
 using api.Mappers;
 using api.Mappers.ExerciseMapper;
@@ -28,9 +29,9 @@ namespace api.Controllers
 
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] QueryObjectForExercises query)
         {
-            var exercises = await _exerciseService.GetAllAsync();
+            var exercises = await _exerciseService.GetAllAsync(query);
 
             // ✅ Отримуємо всі унікальні ID тегів
             var allTagIds = exercises
@@ -41,6 +42,17 @@ namespace api.Controllers
             // ✅ Викликаємо сервіс тегів
             var tags = await _exerTagService.GetByIdsFromExercisesAsync(allTagIds);
             var tagDict = tags.ToDictionary(t => t.Id);
+
+            if (!string.IsNullOrEmpty(query.TagName))
+            {
+                var matchedTagIds = tags.Where(t => string.Equals(t.Name, query.TagName, StringComparison.OrdinalIgnoreCase))
+                    .Select(t => t.Id)
+                    .ToHashSet();
+
+                exercises = exercises
+                    .Where(e => e.TagsIds.Any(id => matchedTagIds.Contains(id)))
+                    .ToList();
+            }
 
             // ✅ Маппимо кожну вправу з її тегами
             var exercisesDto = exercises.Select(e =>

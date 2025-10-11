@@ -1,5 +1,6 @@
 using api.Data;
 using api.Dto.ExerciseDTOs;
+using api.Helpers;
 using api.Interface;
 using api.Models;
 using MongoDB.Bson;
@@ -23,9 +24,14 @@ namespace api.Repesitory
 
 
 
-        public async Task<List<Exercise>> GetAllAsync()
+        public async Task<List<Exercise>> GetAllAsync(QueryObjectForExercises query)
         {
-            return await _database.Exercises.Find(_ => true).ToListAsync();
+            var filter = Builders<Exercise>.Filter.Empty;
+            if (!string.IsNullOrEmpty(query.Name))
+            {
+                filter &= Builders<Exercise>.Filter.Eq(e => e.Name, query.Name);
+            }
+            return await _database.Exercises.Find(filter).ToListAsync();
         }        
 
         public async Task<Exercise?> GetByIdAsync(string id)

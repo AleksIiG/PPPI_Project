@@ -1,5 +1,6 @@
 ﻿using api.Data;
 using api.Dto.ExerciseDTOs;
+using api.Helpers;
 using api.Interface;
 using api.Models;
 using MongoDB.Bson;
@@ -31,6 +32,22 @@ namespace api.Repesitory
                 .ToListAsync();
         }
 
+        public async Task<List<ExerciseTag>> GetByIdsFromExercisesAsync(IEnumerable<string> tagIds, QueryObjectForExercises query)
+        {
+            var tagIdsList = tagIds.ToList();
+            var objectIds = tagIdsList.Select(id => ObjectId.Parse(id)).ToList();
+            var filter = Builders<ExerciseTag>.Filter.In("_id", objectIds);
+            var allTags = await _database.ExerciseTags
+                .Find(filter)
+                .ToListAsync();
+            if (!string.IsNullOrEmpty(query.TagName))
+            {
+                allTags = allTags.Where(t => string.Equals(t.Name, query.TagName, StringComparison.OrdinalIgnoreCase)).ToList();
+
+            }
+            return allTags;
+        }
+
         public async Task<List<string>> GetNonExistingTagsAsync(IEnumerable<string> tagIds)
         {
             var tagIdsList = tagIds.ToList();
@@ -43,9 +60,15 @@ namespace api.Repesitory
                 .ToListAsync();
         }
 
-        public async Task<List<ExerciseTag>> GetAllAsync()
+        public async Task<List<ExerciseTag>> GetAllAsync(QueryObjectForTags query)
         {
-            return await _database.ExerciseTags.Find(_ => true).ToListAsync();
+            var filter = Builders<ExerciseTag>.Filter.Empty;
+            if (!string.IsNullOrEmpty(query.Name))
+            {
+                filter &= Builders<ExerciseTag>.Filter.Eq(t => t.Name, query.Name);
+            }
+            
+            return await _database.ExerciseTags.Find(filter).ToListAsync();
         }
 
         public async Task<ExerciseTag?> GetByIdAsync(string id)

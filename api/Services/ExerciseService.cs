@@ -1,5 +1,6 @@
 using api.Dto.ExerciseDTOs;
 using api.Dto.ExerTagsDto;
+using api.Helpers;
 using api.Interface;
 using api.Mappers.ExerciseMapper;
 using api.Models;
@@ -90,9 +91,9 @@ namespace api.Services
         }
 
 
-        public async Task<List<Exercise>> GetAllAsync()
+        public async Task<List<Exercise>> GetAllAsync(QueryObjectForExercises query)
         {
-            return await _exerciseRepo.GetAllAsync();
+            return await _exerciseRepo.GetAllAsync(query);
         }
 
         public async Task<Exercise> GetByIdAsync(string id)

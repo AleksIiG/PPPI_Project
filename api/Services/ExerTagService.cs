@@ -1,5 +1,6 @@
 ﻿using api.Dto;
 using api.Dto.ExerTagsDto;
+using api.Helpers;
 using api.Interface;
 using api.Models;
 using api.Services.Interfaces;
@@ -30,6 +31,17 @@ namespace api.Services
             }).ToList();
         }
 
+        public async Task<List<ExerTagDto>> GetByIdsFromExercisesAsync(IEnumerable<string> tagIds, QueryObjectForExercises query)
+        {
+            var tags = await _exerTagRepo.GetByIdsFromExercisesAsync(tagIds, query);
+
+            return tags.Select(tag => new ExerTagDto
+            {
+                Id = tag.Id,
+                Name = tag.Name
+            }).ToList();
+        }
+
         public async Task<List<string>> GetNonExistingTagsAsync(IEnumerable<string> tagIds)
         {
             var tagIdsList = tagIds.ToList();
@@ -37,9 +49,9 @@ namespace api.Services
             return tagIdsList.Except(existingTagIds).ToList();
         }
 
-        public async Task<List<ExerciseTag>> GetAllAsync()
+        public async Task<List<ExerciseTag>> GetAllAsync(QueryObjectForTags query)
         {
-            return await _exerTagRepo.GetAllAsync();
+            return await _exerTagRepo.GetAllAsync(query);
         }
 
         public async Task<ExerciseTag> GetByIdAsync(string id)
