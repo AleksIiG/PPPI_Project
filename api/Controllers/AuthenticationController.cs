@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Security.Principal;
@@ -21,10 +22,12 @@ namespace api.Controllers
     public class AuthenticationController : ControllerBase
     {
         private readonly IAuthenticationService _authService;
+        private readonly IRevorkedTokenService _revorkedTokenService;
 
-        public AuthenticationController(IAuthenticationService authService, IUserRepository userRepo)
+        public AuthenticationController(IAuthenticationService authService, IUserRepository userRepo, IRevorkedTokenService revorkedTokenService)
         {
             _authService = authService;
+            _revorkedTokenService = revorkedTokenService;
         }
 
         [HttpPost("register")]
@@ -56,20 +59,28 @@ namespace api.Controllers
         [Authorize]
         public async Task<IActionResult> Logout([FromBody] LogoutDto logoutDto)
         {
-            try
+            var authHeader = HttpContext.Request.Headers["Authorization"].FirstOrDefault();
+            if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
             {
-                if (string.IsNullOrEmpty(logoutDto.RefreshToken))
-                {
-                    return BadRequest(new { message = "Refresh token is required." });
-                }
-                var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-                await _authService.LogoutByRefreshToken(logoutDto.RefreshToken, ipAddress);
-                return Ok(new { message = "Logout successful." });
+                return Unauthorized(new { message = "Authorization header missing or invalid." });
             }
-            catch (Exception ex)
+
+            var token = authHeader.Substring("Bearer ".Length).Trim();
+            var handler = new JwtSecurityTokenHandler();
+            var jwt = handler.ReadJwtToken(token);
+            var jti = jwt.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti)?.Value;
+
+            if (string.IsNullOrEmpty(jti))
             {
-                return BadRequest(new { message = ex.Message });
+                return BadRequest(new { message = "Token does not contain JTI." });
             }
+
+            await _revorkedTokenService.RevokeAsync(jti);
+
+            var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+            await _authService.LogoutByRefreshToken(logoutDto.RefreshToken, ipAddress);
+
+            return Ok(new { message = "Logout successful." });
         }
 
 

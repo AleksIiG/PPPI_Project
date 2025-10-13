@@ -23,6 +23,7 @@ namespace api.Data
         public IMongoCollection<Exercise> Exercises => _database.GetCollection<Exercise>("Exercises");
         public IMongoCollection<ExerciseTag> ExerciseTags => _database.GetCollection<ExerciseTag>("ExerciseTags");
         public IMongoCollection<WorkoutTag> WorkoutTags => _database.GetCollection<WorkoutTag>("WorkoutTags");
+        public IMongoCollection<RevorkedToken> RevorkedTokens => _database.GetCollection<RevorkedToken>("RevorkedTokens");
     }
 }
 

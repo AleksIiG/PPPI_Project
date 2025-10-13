@@ -25,6 +25,7 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUSerService, UserService>();
+builder.Services.AddScoped<IRevorkedTokenService, RevorkedTokenService>();
 
 // JWT config
 var jwtSecret = builder.Configuration["JWT_SECRET"] ?? throw new Exception("JWT_SECRET not set");
@@ -66,7 +67,7 @@ app.UseHttpsRedirection();
 
 // 🔑 Додаємо перевірку автентифікації
 app.UseAuthentication();
-
+app.UseMiddleware<TokenValidationMiddleware>();
 // 🔑 Перевірка прав (після auth)
 app.UseAuthorization();
 

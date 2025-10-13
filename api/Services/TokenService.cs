@@ -30,7 +30,8 @@ namespace api.Services
                 new Claim(ClaimTypes.NameIdentifier, appuser.Id.ToString()),
                 new Claim(ClaimTypes.Name, appuser.Username),
                 new Claim(ClaimTypes.Email, appuser.Email),
-                new Claim(ClaimTypes.Role, appuser.Role)
+                new Claim(ClaimTypes.Role, appuser.Role),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));
