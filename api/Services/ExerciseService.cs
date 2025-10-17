@@ -1,30 +1,47 @@
+
+using api.Dto.ExerciseDTOs;
+using api.Dto.ExerTagsDto;
+using api.Helpers;
+using api.Interface;
+using api.Mappers.ExerciseMapper;
+using api.Models;
+using api.Services.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using api.Interface;
-using api.Models;
-using api.Services.Interfaces;
+
 
 namespace api.Services
 {
     public class ExerciseService : IExerciseService
     {
         private readonly IExerciseRepository _exerciseRepo;
-        public ExerciseService(IExerciseRepository exerciseRepo)
+
+        private readonly IExerTagService _exerTagService;
+        public ExerciseService(IExerciseRepository exerciseRepo, IExerTagService exerTagRepo)
         {
             _exerciseRepo = exerciseRepo;
+            _exerTagService = exerTagRepo;
         }
         public async Task<Exercise> CreateAsync(Exercise exercise)
         {
+            var nonExistingTags = await _exerTagService.GetNonExistingTagsAsync(exercise.TagsIds);
+            var num = nonExistingTags.Count();
+            if (num > 0)
+            {
+                throw new InvalidOperationException("The follow ID dose not exsist.");
+            }
+
+
             if (await _exerciseRepo.ExistsByNameAsync(exercise.Name))
             {
                 throw new InvalidOperationException($"Exercise '{exercise.Name}' already exists.");
             }
-            // TODO: перевірка тегі
+
             return await _exerciseRepo.CreateAsync(exercise);
         }
-        
+
 
 
 
@@ -42,11 +59,47 @@ namespace api.Services
         }
 
 
-
-
-        public async Task<List<Exercise>> GetAllAsync()
+        public async Task<List<ExerciseDto>> GetByIdsFromWorkoutsAsync(IEnumerable<string> exerciseIds)
         {
-            return await _exerciseRepo.GetAllAsync();
+            var exerciseIdsList = exerciseIds.ToList();
+            var exercises = new List<Exercise>();
+
+            // �������� �� ������
+            foreach (var id in exerciseIdsList)
+            {
+                var exercise = await _exerciseRepo.GetByIdAsync(id);
+                if (exercise != null)
+                {
+                    exercises.Add(exercise);
+                }
+            }
+
+            // �������� �� ���� ��� ��� �����
+            var allTagIds = exercises
+                .SelectMany(e => e.TagsIds)
+                .Distinct()
+                .ToList();
+
+            var tags = await _exerTagService.GetByIdsFromExercisesAsync(allTagIds);
+            var tagDict = tags.ToDictionary(t => t.Id);
+
+            // ������� ����� ������ � �� ������
+            return exercises.Select(e =>
+            {
+                var exerciseTags = e.TagsIds
+                    .Where(id => tagDict.ContainsKey(id))
+                    .Select(id => tagDict[id])
+                    .ToList();
+
+                return e.ToExerciseDto(exerciseTags);
+            }).ToList();
+        }
+
+
+        public async Task<List<Exercise>> GetAllAsync(QueryObjectForExercises query)
+        {
+            return await _exerciseRepo.GetAllAsync(query);
+
         }
 
         public async Task<Exercise> GetByIdAsync(string id)
@@ -58,30 +111,35 @@ namespace api.Services
                 throw new KeyNotFoundException($"Exercise with id {id} not found.");
             }
             return exercise;
-            
+
         }
 
 
 
-        
+
+
 
         public async Task<Exercise> UpdateAsync(string id, Exercise exercise)
         {
-            var existExercise = await _exerciseRepo.GetByIdAsync(id);
-            if (existExercise == null)
+            var existingExercise = await _exerciseRepo.GetByIdAsync(id);
+            if (existingExercise == null)
             {
                 throw new KeyNotFoundException($"Exercise with id {id} not found.");
             }
-            if (existExercise.Name != exercise.Name && await _exerciseRepo.ExistsByNameAsync(exercise.Name))
+            if (existingExercise.Name != exercise.Name && await _exerciseRepo.ExistsByNameAsync(exercise.Name))
                 throw new InvalidOperationException($"Exercise with name '{exercise.Name}' already exists.");
 
-            exercise.Id = id;
-            var exerciseModel = await _exerciseRepo.UpdateAsync(id, exercise);
-            if (exerciseModel == null)
+            var nonExistingTags = await _exerTagService.GetNonExistingTagsAsync(exercise.TagsIds);
+            var num = nonExistingTags.Count();
+            if (num > 0)
             {
-                throw new KeyNotFoundException($"Exercise with id {id} not found.");
+                throw new InvalidOperationException("The follow ID dose not exsist.");
             }
-            return exerciseModel;
+
+            exercise.Id = id;
+            await _exerciseRepo.UpdateAsync(id, exercise);
+            return exercise;
+
         }
     }
 }

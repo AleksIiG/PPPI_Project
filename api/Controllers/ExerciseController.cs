@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using api.Dto.ExerciseDTOs;
+using api.Helpers;
+
 using api.Interface;
 using api.Mappers;
 using api.Mappers.ExerciseMapper;
@@ -21,18 +23,55 @@ namespace api.Controllers
 
 
         private readonly IExerciseService _exerciseService;
+        private readonly IExerTagService _exerTagService;
 
-        public ExerciseController(IExerciseService exerciseService)
+        public ExerciseController(IExerciseService exerciseService, IExerTagService exerTagService)
         {
             _exerciseService = exerciseService;
+            _exerTagService = exerTagService;
+
         }
 
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+
+        public async Task<IActionResult> GetAll([FromQuery] QueryObjectForExercises query)
         {
-            var exercises = await _exerciseService.GetAllAsync();
-            var exercisesDto = exercises.Select(e => e.ToExerciseDto()).ToList();
+            var exercises = await _exerciseService.GetAllAsync(query);
+
+            // ✅ Отримуємо всі унікальні ID тегів
+            var allTagIds = exercises
+                .SelectMany(e => e.TagsIds)
+                .Distinct()
+                .ToList();
+
+            // ✅ Викликаємо сервіс тегів
+            var tags = await _exerTagService.GetByIdsFromExercisesAsync(allTagIds);
+            var tagDict = tags.ToDictionary(t => t.Id);
+
+            if (!string.IsNullOrEmpty(query.TagName))
+            {
+                var matchedTagIds = tags.Where(t => string.Equals(t.Name, query.TagName, StringComparison.OrdinalIgnoreCase))
+                    .Select(t => t.Id)
+                    .ToHashSet();
+
+                exercises = exercises
+                    .Where(e => e.TagsIds.Any(id => matchedTagIds.Contains(id)))
+                    .ToList();
+            }
+
+            // ✅ Маппимо кожну вправу з її тегами
+            var exercisesDto = exercises.Select(e =>
+            {
+                var exerciseTags = e.TagsIds
+                    .Where(id => tagDict.ContainsKey(id))
+                    .Select(id => tagDict[id])
+                    .ToList();
+
+                return e.ToExerciseDto(exerciseTags);
+            }).ToList();
+
+
             return Ok(exercisesDto);
         }
 
@@ -41,8 +80,14 @@ namespace api.Controllers
         {
             try
             {
-                var exerciseModel = await _exerciseService.GetByIdAsync(id);
-                return Ok(exerciseModel.ToExerciseDto());
+
+                var exercise = await _exerciseService.GetByIdAsync(id);
+
+                // ✅ Отримуємо тільки потрібні теги
+                var tags = await _exerTagService.GetByIdsFromExercisesAsync(exercise.TagsIds);
+
+                return Ok(exercise.ToExerciseDto(tags));
+
             }
             catch (KeyNotFoundException ex)
             {
@@ -50,7 +95,8 @@ namespace api.Controllers
             }
 
 
-            
+
+
         }
 
         [HttpDelete("{id}")]
@@ -65,7 +111,8 @@ namespace api.Controllers
             {
                 return NotFound(new { message = ex.Message });
             }
-            
+
+
         }
 
 
@@ -92,10 +139,7 @@ namespace api.Controllers
                 return Conflict(new { message = ex.Message });
             }
 
-            //TODO: Придумати як зробити перевірку на Тегах
-            //TODO: Придумати як зробити перевірку на Тегах
-            //TODO: Придумати як зробити перевірку на Тегах
-            //TODO: Придумати як зробити перевірку на Тегах
+
 
         }
 
@@ -110,18 +154,24 @@ namespace api.Controllers
             try
             {
                 var updated = await _exerciseService.UpdateAsync(id, exercise);
+
+                if (updated == null)
+                    throw new KeyNotFoundException($"Exercise with id {id} not found.");
+
                 return Ok(updated);
             }
             catch (InvalidOperationException ex)
             {
                 return Conflict(new { message = ex.Message });
             }
-                
+
+
             catch (KeyNotFoundException ex)
             {
                 return NotFound(new { message = ex.Message });
             }
-            
+
+
         }
     }
 }

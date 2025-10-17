@@ -10,7 +10,11 @@ using Microsoft.IdentityModel.Tokens;
 
 DotEnv.Load(options: new DotEnvOptions(envFilePaths: new[] { ".env" }));
 
+
+DotEnv.Load(options: new DotEnvOptions(envFilePaths: new[] { ".env" }));
+
 var builder = WebApplication.CreateBuilder(args);
+
 
 // Додаємо всі джерела конфігурації
 builder.Configuration
@@ -21,6 +25,7 @@ builder.Configuration
 builder.Services.AddSingleton<MongoDbService>();
 builder.Services.AddScoped<IExerciseRepository, ExerciseRepository>();
 builder.Services.AddScoped<IExerciseService, ExerciseService>();
+
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -58,9 +63,19 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddAuthorization();
+
+builder.Services.AddScoped<IExerTagRepository, ExerTagRepository>();
+builder.Services.AddScoped<IExerTagService, ExerTagService>();
+builder.Services.AddScoped<IWorkoutTagRepository, WorkoutTagRepository>();
+builder.Services.AddScoped<IWorkoutTagService, WorkoutTagService>();
+builder.Services.AddScoped<IWorkoutRepository, WorkoutRepository>();
+builder.Services.AddScoped<IWorkoutService, WorkoutService>();
+
+
 builder.Services.AddControllers();
 
 var app = builder.Build();
+
 
 // Middleware pipeline
 app.UseHttpsRedirection();
@@ -70,6 +85,9 @@ app.UseAuthentication();
 app.UseMiddleware<TokenValidationMiddleware>();
 // 🔑 Перевірка прав (після auth)
 app.UseAuthorization();
+
+
+app.UseHttpsRedirection();
 
 app.MapControllers();
 app.Run();

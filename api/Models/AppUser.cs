@@ -44,7 +44,7 @@ namespace api.Models
 
         [BsonElement("age")]
         public int Age { get; set; }
-        
+
         [BsonElement("role")]
         public string Role { get; set; } = "User"; // "User", "Admin"
 

@@ -23,7 +23,7 @@ namespace api.Models
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
-        public string? Id { get; set; } = string.Empty;
+        public string? Id { get; set; }
         [Required]
         [StringLength(50, MinimumLength = 3, ErrorMessage = "TemplateTag name must be between 3 and 50 characters.")]
         [BsonElement("name")]

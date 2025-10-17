@@ -20,6 +20,7 @@ namespace api.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
+
         private readonly IUSerService _userService;
         public UserController(IUSerService userService)
         {
@@ -88,5 +89,6 @@ namespace api.Controllers
                 return new ObjectResult(new { message = ex.Message }) { StatusCode = 500 };
             }
         }
+
     }
 }
