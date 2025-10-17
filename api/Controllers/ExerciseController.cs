@@ -101,7 +101,7 @@ namespace api.Controllers
             {
                 return NotFound(new { message = ex.Message });
             }
-            
+
         }
 
 
@@ -150,12 +150,12 @@ namespace api.Controllers
             {
                 return Conflict(new { message = ex.Message });
             }
-                
+
             catch (KeyNotFoundException ex)
             {
                 return NotFound(new { message = ex.Message });
             }
-            
+
         }
     }
 }
