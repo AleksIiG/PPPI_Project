@@ -1,4 +1,4 @@
-using BlazorApp.Components;
+using practppi.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
