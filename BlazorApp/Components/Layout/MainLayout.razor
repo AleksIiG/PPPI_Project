@@ -1,9 +1,63 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
+
+<header class="navbar navbar-expand-lg navbar-dark bg-#8A0000 ">
+    <div class="container-fluid d-flex justify-content-between align-items-center">
+        <a class="navbar-brand fw-bold fs-3 text-white custom-font" href="/">Gym Helper</a>
+
+        <div class="d-flex align-items-center">
+            <a class="nav-link text-white mx-3 " href="/trainers">Тренера</a>
+            <a class="nav-link text-white mx-3" href="/templates">Шаблони</a>
+            <span class="text-white mx-3">Ua</span>
+
+            <button class="btn btn-light d-flex align-items-center px-3 py-2">
+                <span class="me-2">Акаунт</span>
+                <!-- место под иконку -->
+                <img src="images/account-icon.png" alt="Account" style="width: 30px; height: 30px;" />
+            </button>
+        </div>
     </div>
+</header>
+
+
+<div>
+    @Body
+</div>
+
+<footer class="bg-dark text-white py-4 mt-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <h5 class="fw-bold">Gym Helper</h5>
+                <p class="mb-1">support@gmail.com</p>
+                <p>+380663250659</p>
+            </div>
+            <div class="col-md-4 mb-3">
+                <h6>Training</h6>
+                <ul class="list-unstyled">
+                    <li>Workout plans</li>
+                    <li>Create your plan</li>
+                    <li>Progress tracking</li>
+                </ul>
+            </div>
+            <div class="col-md-4 mb-3">
+                <h6>Information</h6>
+                <ul class="list-unstyled">
+                    <li>About us</li>
+                    <li>FAQ</li>
+                    <li>News</li>
+                </ul>
+            </div>
+        </div>
+        <div class="text-center border-top pt-3 small">
+            Privacy Policy | Terms of Service
+        </div>
+    </div>
+</footer>
+
+
+<div class="page">
+   
 
     <main>
         <div class="top-row px-4">
@@ -11,7 +65,7 @@
         </div>
 
         <article class="content px-4">
-            @Body
+          
         </article>
     </main>
 </div>

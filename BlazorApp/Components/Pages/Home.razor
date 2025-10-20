@@ -1,7 +1,101 @@
 ﻿@page "/"
 
-<PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
 
-Welcome to your new app.
+
+    <!-- BILL SECTION -->
+    <section class="hero position-relative text-center text-white">
+        <img src="images/hero.jpg" class="w-100 hero-img" alt="Hero background" />
+        <div class="hero-overlay position-absolute top-300px start-50 translate-middle" style="
+        top: 400px;">
+            <h1 class="fw-bold hero_text display-5 mb-3 text-shadow">
+                Хочеш стати таким як він? Тисни
+            </h1>
+
+            <!-- кнопка -->
+            <a href="/templates">
+                <img src="images/fight-button.png" alt="В бій" class="fight-btn" />
+            </a>
+        </div>
+    </section>
+
+    <!-- FEATURES SECTION -->
+    <section class=" what_you_have py-5 bg-light text-center">
+        <div class="container">
+            <h6 class="text-muted">Що ти отримаєш</h6>
+            <h2 class="fw-bold mb-5">Весь Gym Helper з тобою, а це:</h2>
+
+            <div class="row justify-content-center text-start">
+                <div class="col-md-5 mb-3 d-flex align-items-center">
+                    <img src="images/icon-plan.png" class="feature-icon me-3" alt="plans" />
+                    <h5>Якісні плани тренувань</h5>
+                </div>
+
+                <div class="col-md-5 mb-3 d-flex align-items-center">
+                    <img src="images/icon-builder.png" class="feature-icon me-3" alt="builder" />
+                    <h5>Зручний конструктор для тренувань</h5>
+                </div>
+
+                <div class="col-md-5 mb-3 d-flex align-items-center">
+                    <img src="images/icon-trainers.png" class="feature-icon me-3" alt="trainers" />
+                    <h5>Тренери з великим досвідом</h5>
+                </div>
+
+                <div class="col-md-5 mb-3 d-flex align-items-center">
+                    <img src="images/icon-ui.png" class="feature-icon me-3" alt="ui" />
+                    <h5>Зручний інтерфейс</h5>
+                </div>
+            </div>
+
+            <p class="mt-4 mx-auto" style="max-width: 800px;">
+                Наш сайт допоможе скласти план тренувань, підібрати готові програми, 
+                стежити за своїм прогресом і формувати зручний розклад. 
+                Все це — щоб ти міг тренуватися впевнено й досягати своїх цілей крок за кроком.
+            </p>
+        </div>
+    </section>
+
+    <!-- TRAINERS SECTION -->
+    <section class="py-5">
+        <div class="container text-center position-relative">
+            <h2 class="fw-bold mb-4">Тренера</h2>
+
+            <div class="row g-3">
+                @foreach (var trainer in trainers.Take(4))
+                {
+                    <div class="col-12 col-sm-6 col-md-3">
+                        <div class="trainer-card">
+                            <div class="img-wrapper">
+                                <img src="@trainer.ImagePath" class="trainer-img card-img-top" alt="@trainer.Name" />
+                            </div>
+                            <div class="card-body text-center">
+                                <h5 class="card-title fw-bold">@trainer.Name</h5>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+
+    @code {
+        private List<Trainer> trainers = new()
+        {
+            new Trainer("Чад Гіга", "images/trainer1.jpeg"),
+            new Trainer("Рикардо Міло", "images/trainer2.jpg"),
+            new Trainer("Стів Вульфер", "images/trainer3.jpg"),
+            new Trainer("Майк Джонсон", "images/trainer5.jpg")
+        };
+
+        public class Trainer
+        {
+            public string Name { get; set; }
+            public string ImagePath { get; set; }
+
+            public Trainer(string name, string imagePath)
+            {
+                Name = name;
+                ImagePath = imagePath;
+            }
+        }
+    }
