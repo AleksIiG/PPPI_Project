@@ -130,8 +130,8 @@ namespace api.Controllers
 
             try
             {
-                var createdExercise = await _exerciseService.CreateAsync(exercise);
-                return CreatedAtAction(nameof(GetById), new { id = createdExercise.Id }, createdExercise);
+                var CREATEDexercise = await _exerciseService.CreateAsync(exercise);
+                return CreatedAtAction(nameof(GetById), new { id = CREATEDexercise.Id }, CREATEDexercise);
             }
 
             catch (InvalidOperationException ex)
