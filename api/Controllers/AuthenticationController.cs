@@ -57,7 +57,7 @@ namespace api.Controllers
 
         [HttpPost("logout")]
         [Authorize]
-        public async Task<IActionResult> Logout([FromBody] LogoutDto logoutDto)
+        public async Task<IActionResult> Logout([FromBody] LogoutDto logoutUserDto)
         {
             var authHeader = HttpContext.Request.Headers["Authorization"].FirstOrDefault();
             if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
@@ -78,7 +78,7 @@ namespace api.Controllers
             await _revorkedTokenService.RevokeAsync(jti);
 
             var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-            await _authService.LogoutByRefreshToken(logoutDto.RefreshToken, ipAddress);
+            await _authService.LogoutByRefreshToken(logoutUserDto.RefreshToken, ipAddress);
 
             return Ok(new { message = "Logout successful." });
         }
@@ -114,7 +114,7 @@ namespace api.Controllers
 
 
         [HttpPost("refresh-token")]
-        
+
         public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenDto refreshTokenDto)
         {
             if (string.IsNullOrEmpty(refreshTokenDto.RefreshToken))
@@ -161,7 +161,7 @@ namespace api.Controllers
             return Ok(new { message = "Logged out from all devices." });
         }
 
-        
+
 
 
 

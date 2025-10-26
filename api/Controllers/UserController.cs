@@ -69,7 +69,6 @@ namespace api.Controllers
         public async Task<IActionResult> PromoteToAdmin([FromRoute] string id)
         {
             try
-
             {
                 var user = await _userService.GetCurrentUserByIdAsync(id);
                 if (user == null)
