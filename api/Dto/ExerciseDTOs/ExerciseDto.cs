@@ -28,7 +28,7 @@ namespace api.Dto.ExerciseDTOs
                 [StringLength(500, ErrorMessage = "Description cannot be longer than 500 characters")]
                 public string Description { get; set; } = string.Empty;
 
-                [JsonPropertyName("exerTags")]
+                [JsonPropertyName("tagsIds")]
 
                 public List<string> TagsIds { get; set; } = new();
         }
@@ -43,7 +43,7 @@ namespace api.Dto.ExerciseDTOs
 
 
                 public string Description { get; set; } = string.Empty;
-                [JsonPropertyName("exerTags")]
+                [JsonPropertyName("tagsIds")]
 
                 public List<string> TagsIds { get; set; } = new();
         }
