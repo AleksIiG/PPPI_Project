@@ -7,6 +7,8 @@ using api.Services.Interfaces;
 using dotenv.net;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+
 
 DotEnv.Load(options: new DotEnvOptions(envFilePaths: new[] { ".env" }));
 
@@ -73,6 +75,56 @@ builder.Services.AddScoped<IWorkoutService, WorkoutService>();
 
 
 builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
+{
+    // Основна інформація про API
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Version = "v1",
+        Title = "Fitness API",
+        Description = "API для управління користувачами, вправами, тренуваннями та токенами",
+        Contact = new OpenApiContact
+        {
+            Name = "Олексій Кузьмін",
+            Email = "example@gmail.com"
+        }
+    });
+
+    // 🔒 Підтримка авторизації через JWT токен
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        In = ParameterLocation.Header,
+        Description = "Введіть JWT токен у форматі: Bearer {token}",
+        Name = "Authorization",
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+
+    // 📘 Підключення XML-коментарів із контролерів (описи <summary>, <param>)
+    var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    if (File.Exists(xmlPath))
+    {
+        options.IncludeXmlComments(xmlPath);
+    }
+});
+
 
 var app = builder.Build();
 
@@ -86,6 +138,11 @@ app.UseMiddleware<TokenValidationMiddleware>();
 // 🔑 Перевірка прав (після auth)
 app.UseAuthorization();
 
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
 app.UseHttpsRedirection();
 
