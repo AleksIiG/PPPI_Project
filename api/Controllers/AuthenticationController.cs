@@ -43,6 +43,7 @@ namespace api.Controllers
         /// </summary>
         /// <param name="registerUserDto">Дані для реєстрації користувача.</param>
         /// <returns>JWT-токен доступу та refresh-токен.</returns>
+        [AllowAnonymous]
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterUserDto registerUserDto)
         {
@@ -71,6 +72,7 @@ namespace api.Controllers
         /// </summary>
         /// <param name="loginUserDto">Дані для входу користувача.</param>
         /// <returns>JWT-токен доступу та refresh-токен.</returns>
+        [AllowAnonymous]
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginUserDto loginUserDto)
         {
@@ -104,6 +106,7 @@ namespace api.Controllers
         /// </summary>
         /// <param name="refreshTokenDto">Об’єкт, що містить refresh-токен.</param>
         /// <returns>Нова пара токенів (access і refresh).</returns>
+        [AllowAnonymous]
         [HttpPost("refresh-token")]
         public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenDto refreshTokenDto)
         {
