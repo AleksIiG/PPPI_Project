@@ -8,7 +8,6 @@ namespace api.Dto.UserDTOs
 {
     public class RegisterUserDto
     {
-        public string Id { get; set; } = string.Empty;
         [Required]
         [StringLength(50, MinimumLength = 3)]
         public string Username { get; set; } = string.Empty;
@@ -21,7 +20,7 @@ namespace api.Dto.UserDTOs
             ErrorMessage = "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character.")]
         [StringLength(100, MinimumLength = 8, ErrorMessage = "Password must be at least 6 characters")]
 
-        public string Password { get; set; } = string.Empty; 
+        public string Password { get; set; } = string.Empty;
     }
 }
 
