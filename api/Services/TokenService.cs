@@ -27,7 +27,6 @@ namespace api.Services
         {
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, appuser.Id.ToString()),
                 new Claim(ClaimTypes.Name, appuser.Username),
                 new Claim(ClaimTypes.Email, appuser.Email),
                 new Claim(ClaimTypes.Role, appuser.Role),
@@ -76,6 +75,6 @@ namespace api.Services
         {
             appUser.RefreshTokens.RemoveAll(_ => true);
         }
-        
+
     }
 }
