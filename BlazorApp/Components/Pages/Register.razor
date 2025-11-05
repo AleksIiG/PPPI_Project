@@ -1,0 +1,135 @@
+@page "/register"
+@using System.ComponentModel.DataAnnotations
+@using System.Net.Http.Json
+@using Microsoft.AspNetCore.Components.Forms @* <-- Убедись, что это добавлено *@
+@inject NavigationManager NavigationManager 
+@inject IHttpClientFactory HttpClientFactory
+
+<div class="registration-container">
+    <h3>Створіть свій обліковий запис</h3>
+
+    <EditForm Model="@registerModel" OnValidSubmit="HandleRegistration" FormName="register-form">
+        <DataAnnotationsValidator />
+
+        <div class="input-field">
+            <label>Ім'я користувача (Username)</label>
+            <InputText @bind-Value="registerModel.Username" />
+            <ValidationMessage For="@(() => registerModel.Username)" /> 
+        </div>
+
+        <div class="input-field">
+            <label>E-mail</label>
+            <InputText @bind-Value="registerModel.Email" />
+            <ValidationMessage For="@(() => registerModel.Email)" /> 
+        </div>
+
+        <div class="input-field">
+            <label>Пароль</label>
+            <InputText @bind-Value="registerModel.Password" type="password" />
+            <ValidationMessage For="@(() => registerModel.Password)" />
+        </div>
+
+        <div class="checkbox-field">
+            <InputCheckbox @bind-Value="registerModel.AcceptTerms" id="terms" />
+            <label for="terms">
+                Я прочитав <a href="/terms">Правила користування</a> та даю згоду на обробку особистих даних
+            </label>
+            <ValidationMessage For="@(() => registerModel.AcceptTerms)" />
+        </div>
+        
+        @if (!string.IsNullOrEmpty(registrationError))
+        {
+            <div class="alert alert-danger" role="alert">
+                @registrationError
+            </div>
+        }
+
+        <div class="buttons-container">
+            <button type="submit" class="btn-continue" disabled="@isSubmitting">
+                @if(isSubmitting)
+                {
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    <span> Реєстрація...</span>
+                }
+                else
+                {
+                    <span>Продовжити</span>
+                }
+            </button>
+            
+            <a href="/" class="btn-cancel" style="text-decoration: none;">ВІДМІНА</a>
+        </div>
+        
+    </EditForm>
+</div>
+
+@code {
+    // 1. ЭКЗЕМПЛЯР МОДЕЛИ
+    //
+    // 👇 ВОТ ГЛАВНОЕ ИЗМЕНЕНИЕ 👇
+    //
+    // [SupplyParameterFromForm] - говорит Blazor "заполни эту модель данными из POST-запроса"
+    // { get; set; } - превращает поле в свойство, это нужно для [SupplyParameterFromForm]
+    //
+    [SupplyParameterFromForm]
+    private RegisterModel registerModel { get; set; } = new RegisterModel();
+
+    // 2. МОДЕЛЬ ДАННЫХ ДЛЯ ФОРМЫ (без изменений)
+    public class RegisterModel
+    {
+        [Required(ErrorMessage = "Введіть ім'я користувача")]
+        public string Username { get; set; } = "";
+        
+        [Required(ErrorMessage = "Введіть E-mail")]
+        [EmailAddress(ErrorMessage = "Некоректний формат E-mail")]
+        public string Email { get; set; } = "";
+
+        [Required(ErrorMessage = "Введіть пароль")]
+        [StringLength(100, MinimumLength = 8, ErrorMessage = "Пароль має бути не менше 8 символів")]
+        public string Password { get; set; } = "";
+
+        [Range(typeof(bool), "true", "true", ErrorMessage = "Ви повинні погодитися з правилами")]
+        public bool AcceptTerms { get; set; }
+    }
+
+    // 3. Вспомогательные поля
+    private bool isSubmitting = false;
+    private string? registrationError;
+
+    // 4. ОБРАБОТЧИК УСПЕШНОЙ ОТПРАВКИ
+    private async Task HandleRegistration()
+    {
+        // Теперь, благодаря [SupplyParameterFromForm], 
+        // 'registerModel' будет УЖЕ ЗАПОЛНЕН данными от пользователя
+        
+        isSubmitting = true;
+        registrationError = null; 
+
+        try
+        {
+            var httpClient = HttpClientFactory.CreateClient("Api");
+            var response = await httpClient.PostAsJsonAsync("/api/auth/register", registerModel);
+
+            if (response.IsSuccessStatusCode)
+            {
+                NavigationManager.NavigateTo("/registration-success", forceLoad: true); // Добавим forceLoad для SSR
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                registrationError = $"Помилка реєстрації: {errorContent}";
+            }
+        }
+        catch (Exception ex)
+        {
+            registrationError = $"Помилка з'єднання: {ex.Message}";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    // 5. Обработчик "Отмена" - БОЛЬШЕ НЕ НУЖЕН
+    // Мы удалили C#-метод Cancel(), так как кнопка стала <a href="/">
+}

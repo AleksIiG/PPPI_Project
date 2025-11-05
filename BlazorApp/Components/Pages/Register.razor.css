@@ -1,0 +1,48 @@
+/* Пример стилизации (добавь в свой .css файл) */
+
+.input-field {
+    margin-bottom: 20px;
+    position: relative; /* Нужно для "желтой полоски" */
+}
+
+.input-field label {
+    display: block;
+    margin-bottom: 5px;
+    color: #555;
+}
+
+/* Стилизация инпутов, чтобы они были похожи на скриншот */
+.input-field input {
+    width: 100%;
+    padding: 10px 10px 10px 15px; /* Отступ слева для полоски */
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+
+
+
+/* Стили для кнопок */
+.buttons-container {
+    margin-top: 30px;
+}
+
+.btn-continue {
+    background-color: #ffd700; /* Желтый */
+    color: #000;
+    border: none;
+    padding: 12px 25px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-right: 15px;
+}
+
+.btn-cancel {
+    background-color: transparent;
+    color: #888;
+    border: none;
+    padding: 12px 25px;
+    cursor: pointer;
+    font-weight: bold;
+}
