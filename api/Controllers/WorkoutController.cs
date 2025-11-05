@@ -6,6 +6,7 @@ using api.Mappers.WorkoutMapper;
 using api.Models;
 using api.Services;
 using api.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -17,7 +18,7 @@ namespace api.Controllers
 {
     [Route("api/workouts")]
     [ApiController]
-    public class WorkoutController: ControllerBase
+    public class WorkoutController : ControllerBase
     {
         private readonly IWorkoutService _workoutService;
         private readonly IWorkoutTagService _workoutTagService;
@@ -31,6 +32,7 @@ namespace api.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public async Task<IActionResult> GetAll([FromQuery] QueryObjectForWorkouts query)
         {
             var workouts = await _workoutService.GetAllAsync(query);
@@ -83,6 +85,7 @@ namespace api.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize]
         public async Task<IActionResult> GetById([FromRoute] string id)
         {
             if (!ModelState.IsValid)
@@ -104,6 +107,7 @@ namespace api.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create([FromBody] CreateWorkoutDto workoutDto)
         {
             if (!ModelState.IsValid)
@@ -123,6 +127,7 @@ namespace api.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Update([FromBody] UpdateWorkoutDto workoutDto, string id)
         {
             if (!ModelState.IsValid)
@@ -148,6 +153,7 @@ namespace api.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete([FromRoute] string id)
         {
             try

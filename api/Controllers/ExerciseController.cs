@@ -10,7 +10,7 @@ using api.Interface;
 using api.Mappers;
 using api.Mappers.ExerciseMapper;
 using api.Services.Interfaces;
-
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
@@ -34,7 +34,7 @@ namespace api.Controllers
 
 
         [HttpGet]
-
+        [Authorize]
         public async Task<IActionResult> GetAll([FromQuery] QueryObjectForExercises query)
         {
             var exercises = await _exerciseService.GetAllAsync(query);
@@ -76,6 +76,7 @@ namespace api.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize]
         public async Task<IActionResult> GetById([FromRoute] string id)
         {
             try
@@ -100,6 +101,7 @@ namespace api.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete([FromRoute] string id)
         {
             try
@@ -120,6 +122,7 @@ namespace api.Controllers
 
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create([FromBody] CreateExerciseDto exerciseDto)
         {
             if (!ModelState.IsValid)
@@ -146,6 +149,7 @@ namespace api.Controllers
 
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Update([FromBody] UpdateExerciseDto exerciseDto, string id)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);

@@ -3,6 +3,7 @@ using api.Helpers;
 using api.Mappers.WorkoutMapper;
 using api.Services;
 using api.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -15,7 +16,7 @@ namespace api.Controllers
     [Route("api/workoutsTags")]
     [ApiController]
 
-    public class WorkoutTagController: ControllerBase
+    public class WorkoutTagController : ControllerBase
     {
         private readonly IWorkoutTagService _workoutTagService;
 
@@ -25,6 +26,7 @@ namespace api.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public async Task<IActionResult> GetAllAsync([FromQuery] QueryObjectForTags query)
         {
             if (!ModelState.IsValid)
@@ -40,6 +42,7 @@ namespace api.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize]
         public async Task<IActionResult> GetById([FromRoute] string id)
         {
             if (!ModelState.IsValid)
@@ -58,6 +61,7 @@ namespace api.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateAsync([FromBody] CreateWorkoutTagDto workTagDto)
         {
             if (!ModelState.IsValid)
@@ -78,7 +82,7 @@ namespace api.Controllers
         }
 
         [HttpPut("{id}")]
-
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateAsync([FromBody] UpdateWorkoutTagDto workTagDto, string id)
         {
             if (!ModelState.IsValid)
@@ -109,6 +113,7 @@ namespace api.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteAsync([FromRoute] string id)
         {
             try

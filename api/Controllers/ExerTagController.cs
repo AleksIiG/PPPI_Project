@@ -6,6 +6,7 @@ using api.Mappers;
 using api.Mappers.ExerTagMapper;
 using api.Services;
 using api.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -19,7 +20,7 @@ namespace api.Controllers
 {
     [Route("api/exercisesTags")]
     [ApiController]
-    public class ExerTagController: ControllerBase
+    public class ExerTagController : ControllerBase
     {
         private readonly IExerTagService _exerTagService;
 
@@ -29,6 +30,7 @@ namespace api.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public async Task<IActionResult> GetAllAsync([FromQuery] QueryObjectForTags query)
         {
             if (!ModelState.IsValid)
@@ -40,10 +42,11 @@ namespace api.Controllers
             {
                 return NotFound();
             }
-            return Ok(tags.Select(t=>t.ToExerTagDto()));
+            return Ok(tags.Select(t => t.ToExerTagDto()));
         }
 
         [HttpGet("{id}")]
+        [Authorize]
         public async Task<IActionResult> GetById([FromRoute] string id)
         {
             if (!ModelState.IsValid)
@@ -62,9 +65,10 @@ namespace api.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateAsync([FromBody] CreateExerTagDto exerTagDto)
         {
-            if (!ModelState.IsValid) 
+            if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
@@ -82,6 +86,7 @@ namespace api.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
 
         public async Task<IActionResult> UpdateAsync([FromBody] UpdateExerTagDto exerTagDto, string id)
         {
@@ -113,6 +118,7 @@ namespace api.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteAsync([FromRoute] string id)
         {
             try
