@@ -8,7 +8,6 @@ namespace api.Dto.UserDTOs
 {
     public class RegisterUserDto
     {
-        public string Id { get; set; } = string.Empty;
         [Required]
         [StringLength(50, MinimumLength = 3)]
         public string Username { get; set; } = string.Empty;
