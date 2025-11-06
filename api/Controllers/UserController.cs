@@ -90,5 +90,36 @@ namespace api.Controllers
             }
         }
 
+        [HttpPut("likeButton/{workoutId}")]
+        [Authorize]
+        public async Task<IActionResult> WorkoutToFavorites([FromRoute] string workoutId)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId == null)
+            {
+                return Unauthorized(new { message = "User ID not found in token." });
+            }
+            try
+            {
+                var result = await _userService.WorkoutToFavoritesAsync(userId, workoutId);
+                if (result)
+                    return Ok(new { message = $"Workout added to favorites of user with id {userId}." });
+
+                return Ok(new { message = $"Workout deleated from favorites of user with id {userId}." });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+
+            catch (Exception ex)
+            {
+                return new ObjectResult(new { message = ex.Message }) { StatusCode = 500 };
+            }
+
+
+
+
+        }
     }
 }

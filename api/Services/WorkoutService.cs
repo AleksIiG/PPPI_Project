@@ -64,7 +64,7 @@ namespace api.Services
             return await _workoutRepo.DeleteAsync(id);
         }
 
-        public async Task<List<Workout>> GetAllAsync(QueryObjectForWorkouts  query)
+        public async Task<List<Workout>> GetAllAsync(QueryObjectForWorkouts query)
         {
             return await _workoutRepo.GetAllAsync(query);
         }
