@@ -47,6 +47,21 @@ public class TokenValidationMiddleware
             return;
         }
 
+        var expClaim = jwt.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Exp)?.Value;
+        if (long.TryParse(expClaim, out var exp))
+        {
+            // Перетворюємо UNIX time у DateTime
+            var expDate = DateTimeOffset.FromUnixTimeSeconds(exp).UtcDateTime;
+            if (expDate < DateTime.UtcNow)
+            {
+                _logger.LogInformation("Expired token used. Exp: {Exp}", expDate);
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                await context.Response.WriteAsJsonAsync(new { message = "Token has expired." });
+                return;
+            }
+        }
+
+
         var jti = jwt.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti)?.Value;
         var sub = jwt.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub || c.Type == ClaimTypes.NameIdentifier)?.Value;
 
