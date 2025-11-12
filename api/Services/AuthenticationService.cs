@@ -30,11 +30,12 @@ namespace api.Services
                 throw new InvalidOperationException($"User with email {appUser.Email} already exists.");
             }
 
-            var token = _tokenService.CreateAccessToken(appUser);
+            var createdUser = await _userRepo.CreateAsync(appUser);
+
+            var token = _tokenService.CreateAccessToken(createdUser);
             var RefreshToken = _tokenService.CreateRefreshToken(ipAddress);
 
-            appUser.RefreshTokens.Add(RefreshToken);
-            await _userRepo.CreateAsync(appUser);
+            createdUser.RefreshTokens.Add(RefreshToken);
 
 
 
@@ -121,7 +122,7 @@ namespace api.Services
             }
 
             _tokenService.RemoveALLRefreshTokens(existingUser);
-            
+
             var result = await _userRepo.UpdateAsync(existingUser.Id, existingUser);
             if (result == null)
             {

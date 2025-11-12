@@ -1,4 +1,5 @@
-using BlazorApp.Components; // <-- ИСПРАВЛЕНО (было BlazorApp)
+
+using practppi.Components;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -31,6 +32,8 @@ app.UseStaticFiles();
 app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode(); // <-- Мы оставляем это. Весь сайт будет интерактивным.
+
+    .AddInteractiveServerRenderMode();
+
 
 app.Run();

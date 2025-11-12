@@ -6,15 +6,19 @@
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v8.0": {
-      "BlazorApp/1.0.0": {
+
+      "practppi/1.0.0": {
         "runtime": {
-          "BlazorApp.dll": {}
+          "practppi.dll": {}
+
         }
       }
     }
   },
   "libraries": {
-    "BlazorApp/1.0.0": {
+
+    "practppi/1.0.0": {
+
       "type": "project",
       "serviceable": false,
       "sha512": ""

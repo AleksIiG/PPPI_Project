@@ -38,7 +38,9 @@ namespace api.Mappers.UserMapper
                 Id = appUser.Id,
                 Email = appUser.Email,
                 UserName = appUser.Username,
-                Role = appUser.Role
+                Role = appUser.Role,
+                LikedWorkouts = appUser.LikedWorkouts,
+                CreatedWorkouts = appUser.CreatedWorkouts,
             };
         }
     }
