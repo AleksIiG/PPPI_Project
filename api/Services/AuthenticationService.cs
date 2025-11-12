@@ -29,13 +29,13 @@ namespace api.Services
             {
                 throw new InvalidOperationException($"User with email {appUser.Email} already exists.");
             }
+            var RefreshToken = _tokenService.CreateRefreshToken(ipAddress);
 
+            appUser.RefreshTokens.Add(RefreshToken);
             var createdUser = await _userRepo.CreateAsync(appUser);
 
             var token = _tokenService.CreateAccessToken(createdUser);
-            var RefreshToken = _tokenService.CreateRefreshToken(ipAddress);
 
-            createdUser.RefreshTokens.Add(RefreshToken);
 
 
 
