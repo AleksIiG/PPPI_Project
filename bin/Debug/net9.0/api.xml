@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>api</name>
+    </assembly>
+    <members>
+        <member name="T:api.Controllers.AuthenticationController">
+            <summary>
+            Контролер для аутентифікації користувачів (реєстрація, вхід, вихід, оновлення токена).
+            </summary>
+        </member>
+        <member name="M:api.Controllers.AuthenticationController.#ctor(api.Services.Interfaces.IAuthenticationService,api.Interface.IUserRepository,api.Services.Interfaces.IRevorkedTokenService)">
+            <summary>
+            Створює новий екземпляр контролера автентифікації.
+            </summary>
+            <param name="authService">Сервіс для автентифікації користувачів.</param>
+            <param name="userRepo">Репозиторій користувачів (не використовується напряму).</param>
+            <param name="revorkedTokenService">Сервіс для роботи з відкликаними токенами.</param>
+        </member>
+        <member name="M:api.Controllers.AuthenticationController.Register(api.Dto.UserDTOs.RegisterUserDto)">
+            <summary>
+            Реєструє нового користувача та повертає JWT-токени.
+            </summary>
+            <param name="registerUserDto">Дані для реєстрації користувача.</param>
+            <returns>JWT-токен доступу та refresh-токен.</returns>
+        </member>
+        <member name="M:api.Controllers.AuthenticationController.Login(api.Dto.UserDTOs.LoginUserDto)">
+            <summary>
+            Виконує вхід користувача за логіном і паролем.
+            </summary>
+            <param name="loginUserDto">Дані для входу користувача.</param>
+            <returns>JWT-токен доступу та refresh-токен.</returns>
+        </member>
+        <member name="M:api.Controllers.AuthenticationController.RefreshToken(api.Dto.UserDTOs.RefreshTokenDto)">
+            <summary>
+            Оновлює пару токенів за допомогою дійсного refresh-токена.
+            </summary>
+            <param name="refreshTokenDto">Об’єкт, що містить refresh-токен.</param>
+            <returns>Нова пара токенів (access і refresh).</returns>
+        </member>
+        <member name="M:api.Controllers.AuthenticationController.Logout(api.Dto.UserDTOs.LogoutDto)">
+            <summary>
+            Вихід користувача (відкликає поточний токен).
+            </summary>
+            <param name="logoutDto">Об’єкт із refresh-токеном користувача.</param>
+            <returns>Підтвердження виходу.</returns>
+        </member>
+        <member name="M:api.Controllers.AuthenticationController.LogoutAll">
+            <summary>
+            Вихід з усіх пристроїв (відкликає всі токени користувача).
+            </summary>
+            <returns>Підтвердження виходу з усіх пристроїв.</returns>
+        </member>
+    </members>
+</doc>
