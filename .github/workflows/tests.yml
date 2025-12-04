@@ -29,10 +29,10 @@ jobs:
           nuget-${{ runner.os }}-
 
     - name: Restore
-      run: dotnet restore "Project PPPJ.sln"
+      run: dotnet restore "Project_PPPI.sln"
 
     - name: Test
-      run: dotnet test "Project PPPJ.sln" --logger "trx;LogFileName=test-results.trx" || true
+      run: dotnet test "Project_PPPI.sln" --logger "trx;LogFileName=test-results.trx" || true
 
     - uses: actions/upload-artifact@v4
       if: always()
@@ -51,10 +51,10 @@ jobs:
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
-    - run: dotnet restore "Project PPPJ.sln"
-    - run: dotnet build "Project PPPJ.sln" --configuration ${{ env.BUILD_CONFIG }}
+    - run: dotnet restore "Project_PPPI.sln"
+    - run: dotnet build "Project_PPPI.sln" --configuration ${{ env.BUILD_CONFIG }}
 
-    - run: dotnet publish "Project PPPJ.sln" -c ${{ env.BUILD_CONFIG }} -o ./publish
+    - run: dotnet publish "Project_PPPI.sln" -c ${{ env.BUILD_CONFIG }} -o ./publish
 
     - uses: actions/upload-artifact@v4
       with:
@@ -82,4 +82,4 @@ jobs:
       run: |
         echo "Deploying with token: ${DEPLOY_TOKEN:0:4}****"
         ls -la ./artifact
-        echo "✅ Deploy success"
+        echo "Deploy success"
