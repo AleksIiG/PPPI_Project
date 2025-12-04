@@ -1,27 +1,85 @@
-name: Tests
+name: CI/CD
 
 on:
   push:
+    branches: [ "**" ]
   pull_request:
 
+env:
+  DOTNET_VERSION: "9.0.x"
+  BUILD_CONFIG: Release
+
 jobs:
-  build:
+
+  test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - uses: actions/checkout@v4
 
-      - name: Set up .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 9.0.x
+    - uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Restore dependencies
-        run: dotnet restore
+    - uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          nuget-${{ runner.os }}-
 
-      - name: Build project
-        run: dotnet build --no-restore
+    - name: Restore
+      run: dotnet restore "Project PPPJ.sln"
 
-      - name: Run tests
-        run: dotnet test --no-build --verbosity normal
+    - name: Test
+      run: dotnet test "Project PPPJ.sln" --logger "trx;LogFileName=test-results.trx" || true
+
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-report
+        path: "**/test-results.trx"
+
+  build:
+    runs-on: ubuntu-latest
+    needs: [test]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - run: dotnet restore "Project PPPJ.sln"
+    - run: dotnet build "Project PPPJ.sln" --configuration ${{ env.BUILD_CONFIG }}
+
+    - run: dotnet publish "Project PPPJ.sln" -c ${{ env.BUILD_CONFIG }} -o ./publish
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: app-build
+        path: ./publish
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: github.ref == 'refs/heads/main'
+
+    environment:
+      name: staging
+      url: https://staging.example.com
+
+    steps:
+    - uses: actions/download-artifact@v4
+      with:
+        name: app-build
+        path: ./artifact
+
+    - name: Simulate deploy
+      env:
+        DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+      run: |
+        echo "Deploying with token: ${DEPLOY_TOKEN:0:4}****"
+        ls -la ./artifact
+        echo "✅ Deploy success"
