@@ -12,7 +12,7 @@ env:
 jobs:
 
   # =======================
-  # 🧪 TEST
+  #  TEST
   # =======================
   test:
     runs-on: ubuntu-latest
@@ -24,7 +24,7 @@ jobs:
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
-    # ✅ Cache NuGet
+    #  Cache NuGet
     - uses: actions/cache@v4
       with:
         path: ~/.nuget/packages
@@ -35,10 +35,13 @@ jobs:
     - name: Restore
       run: dotnet restore "Project_PPPI.sln"
 
+    #  ЗАПУСК КОНКРЕТНИХ ТЕСТОВИХ ПРОЄКТІВ
     - name: Run tests
-      run: dotnet test "Project_PPPI.sln" --logger "trx" --results-directory TestResults || true
+      run: |
+        dotnet test Tests/ControllersTests --logger "trx" --results-directory TestResults
+        dotnet test Tests/ServicesTests --logger "trx" --results-directory TestResults
 
-    # ✅ Artifact: test results (гарантовано знайде файл)
+    #  ЗБЕРЕЖЕННЯ TEST RESULTS
     - name: Upload Test Artifact
       uses: actions/upload-artifact@v4
       if: always()
@@ -46,8 +49,9 @@ jobs:
         name: test-report
         path: TestResults
 
+
   # =======================
-  # 🏗 BUILD
+  #  BUILD
   # =======================
   build:
     runs-on: ubuntu-latest
@@ -66,21 +70,22 @@ jobs:
     - name: Build
       run: dotnet build "Project_PPPI.sln" --configuration ${{ env.BUILD_CONFIG }}
 
-    # ✅ ГАРАНТОВАНО створює папку publish
+    #  ГАРАНТОВАНО СТВОРЮЄ ПАПКУ publish
     - name: Publish
       run: |
         mkdir -p publish
         dotnet publish "Project_PPPI.sln" -c ${{ env.BUILD_CONFIG }} -o publish
 
-    # ✅ Artifact: build (app-build)
+    #  ARTIFACT ДЛЯ DEPLOY
     - name: Upload Build Artifact
       uses: actions/upload-artifact@v4
       with:
         name: app-build
         path: publish
 
+
   # =======================
-  # 🚀 DEPLOY
+  #  DEPLOY
   # =======================
   deploy:
     runs-on: ubuntu-latest
@@ -104,4 +109,4 @@ jobs:
       run: |
         echo "Deploying with token: ${DEPLOY_TOKEN:0:4}****"
         ls -la ./artifact
-        echo "✅ Deploy success"
+        echo " Deploy success"
