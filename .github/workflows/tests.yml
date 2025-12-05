@@ -33,10 +33,10 @@ jobs:
 
     # ✅ ЗАПУСК ТЕСТІВ СТРОГО ПО .csproj
     - name: Run Controller Tests
-      run: dotnet test Tests/ControllersTests/ControllersTests.csproj --logger trx --results-directory TestResults || true
+      run: dotnet test Tests/ControllersTests/ControllersTests.csproj --logger "trx;LogFileName=ControllersTests.trx" --results-directory TestResults || true
 
     - name: Run Service Tests
-      run: dotnet test Tests/ServicesTests/ServicesTests.csproj --logger trx --results-directory TestResults || true
+      run: dotnet test Tests/ServicesTests/ServicesTests.csproj --logger "trx;LogFileName=ServicesTests.trx" --results-directory TestResults || true
 
     # ✅ АРТЕФАКТ ТЕСТІВ ЗАВЖДИ ЗАВАНТАЖУЄТЬСЯ
     - name: Upload Test Artifact
