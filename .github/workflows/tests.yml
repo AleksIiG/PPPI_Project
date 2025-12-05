@@ -21,7 +21,6 @@ jobs:
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
-    # Cache NuGet
     - uses: actions/cache@v4
       with:
         path: ~/.nuget/packages
@@ -29,19 +28,18 @@ jobs:
         restore-keys: |
           nuget-${{ runner.os }}-
 
-    - name: Restore dependencies
+    - name: Restore
       run: dotnet restore "Project_PPPI.sln"
 
-    - name: Run tests
+    - name: Test
       run: dotnet test "Project_PPPI.sln" --logger "trx;LogFileName=test-results.trx" || true
 
-    # Artifact: test report
+    #  Artifact: test results (шукаємо по всьому репозиторію)
     - uses: actions/upload-artifact@v4
       if: always()
       with:
         name: test-report
-        # точний шлях до .trx файлів
-        path: Tests/TestResults
+        path: "**/*.trx"
 
   build:
     runs-on: ubuntu-latest
@@ -57,19 +55,20 @@ jobs:
     - run: dotnet restore "Project_PPPI.sln"
     - run: dotnet build "Project_PPPI.sln" --configuration ${{ env.BUILD_CONFIG }}
 
+    #  Publish створить папку ./publish автоматично
     - run: dotnet publish "Project_PPPI.sln" -c ${{ env.BUILD_CONFIG }} -o ./publish
 
-    # Artifact: build
+    #  Artifact: build
     - uses: actions/upload-artifact@v4
       with:
         name: app-build
-        path: ./publish
+        path: ./publish || .
 
   deploy:
     runs-on: ubuntu-latest
     needs: [build]
-    # Deploy з гілки develop
     if: github.ref == 'refs/heads/develop'
+
     environment:
       name: staging
       url: https://staging.example.com
