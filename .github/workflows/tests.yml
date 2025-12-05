@@ -11,9 +11,9 @@ env:
 
 jobs:
 
-  # =======================
-  #  TEST
-  # =======================
+# =======================
+# 🧪 TEST
+# =======================
   test:
     runs-on: ubuntu-latest
 
@@ -24,36 +24,32 @@ jobs:
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
-    #  Cache NuGet
-    - uses: actions/cache@v4
-      with:
-        path: ~/.nuget/packages
-        key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
-        restore-keys: |
-          nuget-${{ runner.os }}-
-
     - name: Restore
       run: dotnet restore "Project_PPPI.sln"
 
-    #  ЗАПУСК КОНКРЕТНИХ ТЕСТОВИХ ПРОЄКТІВ
-    - name: Run tests
-      run: |
-        mkdir -p TestResults
-        dotnet test Tests/ControllersTests --logger "trx" --results-directory TestResults || true
-        dotnet test Tests/ServicesTests --logger "trx" --results-directory TestResults || true
+    # ✅ ГАРАНТОВАНО створюємо папку
+    - name: Create TestResults folder
+      run: mkdir -p TestResults
 
-    #  ЗБЕРЕЖЕННЯ TEST RESULTS
+    # ✅ ЗАПУСК ТЕСТІВ СТРОГО ПО .csproj
+    - name: Run Controller Tests
+      run: dotnet test Tests/ControllersTests/ControllersTests.csproj --logger trx --results-directory TestResults || true
+
+    - name: Run Service Tests
+      run: dotnet test Tests/ServicesTests/ServicesTests.csproj --logger trx --results-directory TestResults || true
+
+    # ✅ АРТЕФАКТ ТЕСТІВ ЗАВЖДИ ЗАВАНТАЖУЄТЬСЯ
     - name: Upload Test Artifact
-      uses: actions/upload-artifact@v4
       if: always()
+      uses: actions/upload-artifact@v4
       with:
         name: test-report
         path: TestResults
 
 
-  # =======================
-  #  BUILD
-  # =======================
+# =======================
+# 🏗 BUILD
+# =======================
   build:
     runs-on: ubuntu-latest
     needs: [test]
@@ -71,13 +67,13 @@ jobs:
     - name: Build
       run: dotnet build "Project_PPPI.sln" --configuration ${{ env.BUILD_CONFIG }}
 
-    #  ГАРАНТОВАНО СТВОРЮЄ ПАПКУ publish
+    # ✅ ПРАВИЛЬНИЙ publish
     - name: Publish
       run: |
         mkdir -p publish
         dotnet publish "Project_PPPI.sln" -c ${{ env.BUILD_CONFIG }} -o publish
 
-    #  ARTIFACT ДЛЯ DEPLOY
+    # ✅ АРТЕФАКТ ЗБІРКИ
     - name: Upload Build Artifact
       uses: actions/upload-artifact@v4
       with:
@@ -85,9 +81,9 @@ jobs:
         path: publish
 
 
-  # =======================
-  #  DEPLOY
-  # =======================
+# =======================
+# 🚀 DEPLOY
+# =======================
   deploy:
     runs-on: ubuntu-latest
     needs: [build]
@@ -110,4 +106,4 @@ jobs:
       run: |
         echo "Deploying with token: ${DEPLOY_TOKEN:0:4}****"
         ls -la ./artifact
-        echo " Deploy success"
+        echo "✅ Deploy success"
