@@ -36,7 +36,7 @@ jobs:
       run: dotnet restore "Project_PPPI.sln"
 
     - name: Run tests
-      run: dotnet test "Project_PPPI.sln" --logger "trx;LogFileName=test-results.trx" || true
+      run: dotnet test "Project_PPPI.sln" --logger "trx" --results-directory TestResults || true
 
     # ✅ Artifact: test results (гарантовано знайде файл)
     - name: Upload Test Artifact
@@ -44,7 +44,7 @@ jobs:
       if: always()
       with:
         name: test-report
-        path: "**/*.trx"
+        path: TestResults
 
   # =======================
   # 🏗 BUILD
