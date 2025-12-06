@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using api.Interface;
 using api.Models;
 using api.Services;
-using api.Services.Interfaces;
 using Moq;
 using Xunit;
 using FluentAssertions;
@@ -14,13 +13,20 @@ namespace Tests.Services
     public class UserServiceTests
     {
         private readonly Mock<IUserRepository> _userRepoMock;
+        private readonly Mock<IWorkoutRepository> _workoutRepoMock;
         private readonly UserService _userService;
 
         public UserServiceTests()
         {
             // Створюємо mock-об'єкт для репозиторію користувачів
             _userRepoMock = new Mock<IUserRepository>();
-            _userService = new UserService(_userRepoMock.Object);
+            _workoutRepoMock = new Mock<IWorkoutRepository>();
+
+            // Створюємо сервіс з mock-залежностями
+            _userService = new UserService(
+                _userRepoMock.Object,
+                _workoutRepoMock.Object
+            );
         }
 
         [Fact]
