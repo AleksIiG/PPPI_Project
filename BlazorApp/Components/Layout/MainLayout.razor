@@ -1,78 +1,44 @@
 ﻿@inherits LayoutComponentBase
 
-@inject NavigationManager NavigationManager
+<div class="d-flex flex-column min-vh-100">
+    
+    <!-- Подключаем наш новый умный хэдер -->
+    <AppHeader />
 
-<header class="navbar navbar-expand-lg navbar-dark" style="background-color: #8A0000;">
-
-    <div class="container-fluid d-flex justify-content-between align-items-center">
-        <a class="navbar-brand fw-bold fs-3 text-white custom-font" href="/">Gym Helper</a>
-
-        <div class="d-flex align-items-center">
-            <a class="nav-link text-white mx-3 " href="#">Тренера</a>
-            <a class="nav-link text-white mx-3" href="/register">Шаблони</a>
-            <span class="text-white mx-3">Ua</span>
-
-            <a class="btn btn-light d-flex align-items-center px-3 py-2" href="/register" style="text-decoration: none;">
-                <span class="me-2">Акаунт</span>
-                <img src="images/account-icon.png" alt="Account" style="width: 30px; height: 30px;" />
-            </a>
-
-        </div>
-    </div>
-</header>
-
-<div>
-    @Body
-</div>
-
-<footer class="bg-dark text-white py-4 mt-5">
-    <div class="container">
-        <div class="row">
-            <div class="col-md-4 mb-3">
-                <h5 class="fw-bold">Gym Helper</h5>
-                <p class="mb-1">support@gmail.com</p>
-                <p>+380663250659</p>
-            </div>
-            <div class="col-md-4 mb-3">
-                <h6>Training</h6>
-                <ul class="list-unstyled">
-                    <li>Workout plans</li>
-                    <li>Create your plan</li>
-                    <li>Progress tracking</li>
-                </ul>
-            </div>
-            <div class="col-md-4 mb-3">
-                <h6>Information</h6>
-                <ul class="list-unstyled">
-                    <li>About us</li>
-                    <li>FAQ</li>
-                    <li>News</li>
-                </ul>
-            </div>
-        </div>
-        <div class="text-center border-top pt-3 small">
-            Privacy Policy | Terms of Service
-        </div>
-    </div>
-</footer>
-
-
-<div class="page">
-   
-
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
-
-        <article class="content px-4">
-
-        </article>
+    <!-- Основной контент страницы -->
+    <main class="flex-grow-1">
+        @Body
     </main>
-</div>
 
-<div id="blazor-error-ui">
-    An unhandled error has occurred.
-    <a href="#" class="reload">Reload</a>
-    <a class="dismiss">🗙</a>
+    <!-- Твой футер -->
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <h5 class="fw-bold">Gym Helper</h5>
+                    <p class="mb-1">support@gmail.com</p>
+                    <p>+380663250659</p>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <h6>Training</h6>
+                    <ul class="list-unstyled">
+                        <li>Workout plans</li>
+                        <li>Create your plan</li>
+                        <li>Progress tracking</li>
+                    </ul>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <h6>Information</h6>
+                    <ul class="list-unstyled">
+                        <li>About us</li>
+                        <li>FAQ</li>
+                        <li>News</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="text-center border-top pt-3 small">
+                Privacy Policy | Terms of Service
+            </div>
+        </div>
+    </footer>
 </div>

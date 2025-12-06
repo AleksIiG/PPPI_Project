@@ -1,0 +1,352 @@
+@page "/workouts"
+@rendermode InteractiveServer
+@using Microsoft.AspNetCore.Authorization
+@using System.Net.Http.Json
+@using System.Text.Json
+@using System.Text.Json.Serialization
+@inject IHttpClientFactory HttpClientFactory
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+
+<div class="container mt-4">
+    <div class="row align-items-center mb-4">
+        <div class="col-md-6">
+            <h2 class="fw-bold m-0" style="color: #8A0000; font-family: 'Jaro', sans-serif; font-size: 2.5rem;">
+                Список тренувань
+            </h2>
+        </div>
+        <div class="col-md-6 mt-3 mt-md-0">
+            <div class="input-group">
+                <span class="input-group-text bg-white border-end-0">🔍</span>
+                <!-- 
+                   👇 ИЗМЕНЕНИЕ: 
+                   Используем value + @oninput для мгновенной реакции.
+                   @bind:event="oninput" тоже можно, но метод дает больше контроля.
+                -->
+                <input type="text" class="form-control border-start-0 ps-0" 
+                       placeholder="Пошук (наприклад: жим...)" 
+                       value="@searchTerm" @oninput="OnSearchInput" />
+            </div>
+        </div>
+    </div>
+
+    <!-- ФИЛЬТР ПО ТЕГАМ -->
+    @if (allTags != null && allTags.Any())
+    {
+        <div class="d-flex flex-wrap gap-2 mb-4 pb-2 border-bottom">
+            <button class="btn btn-sm rounded-pill @(string.IsNullOrEmpty(selectedTagName) ? "btn-dark" : "btn-outline-dark")"
+                    @onclick="() => FilterByTag(null)">
+                Всі
+            </button>
+
+            @foreach (var tag in allTags)
+            {
+                <button class="btn btn-sm rounded-pill @(selectedTagName == tag.Name ? "btn-danger" : "btn-outline-secondary")"
+                        @onclick="() => FilterByTag(tag.Name)">
+                    @tag.Name
+                </button>
+            }
+        </div>
+    }
+
+    @if (isLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-danger" role="status">
+                <span class="visually-hidden">Завантаження...</span>
+            </div>
+            <p class="text-muted mt-2">Завантажуємо тренування...</p>
+        </div>
+    }
+    else if (filteredWorkouts == null || filteredWorkouts.Count == 0)
+    {
+        <div class="text-center py-5">
+            <div style="font-size: 3rem;">📭</div>
+            <h5 class="text-muted mt-3">Тренувань не знайдено</h5>
+            <p class="small text-muted">Спробуйте змінити параметри пошуку</p>
+            <!-- Кнопка сброса очищает и поиск, и теги -->
+            <button class="btn btn-outline-dark btn-sm mt-2" @onclick="ResetFilters">Скинути всі фільтри</button>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            <!-- 👇 ВАЖНО: Рисуем список filteredWorkouts -->
+            @foreach (var workout in filteredWorkouts)
+            {
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm border-0 workout-card">
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title fw-bold text-dark mb-0">@workout.Name</h5>
+                                
+                                <button class="btn btn-link p-0 text-decoration-none like-btn" 
+                                        @onclick="() => ToggleLike(workout.Id)">
+                                    @if (likedWorkoutIds.Contains(workout.Id))
+                                    {
+                                        <span style="font-size: 1.5rem; color: #dc3545;">❤️</span>
+                                    }
+                                    else
+                                    {
+                                        <span style="font-size: 1.5rem; opacity: 0.3; filter: grayscale(100%);">❤️</span>
+                                    }
+                                </button>
+                            </div>
+
+                            <p class="card-text text-muted flex-grow-1 small">
+                                @if (!string.IsNullOrEmpty(workout.Description) && workout.Description.Length > 120)
+                                {
+                                    @workout.Description.Substring(0, 120)<span>...</span>
+                                }
+                                else
+                                {
+                                    @workout.Description
+                                }
+                            </p>
+
+                            <!-- ТЕГИ -->
+                            <div class="mt-3 pt-3 border-top">
+                                @{
+                                    var tagNamesToDisplay = new List<string>();
+                                    if (workout.Tags != null && workout.Tags.Any())
+                                    {
+                                        tagNamesToDisplay.AddRange(workout.Tags.Select(t => t.Name));
+                                    }
+                                    else if (workout.TagsIds != null && workout.TagsIds.Any())
+                                    {
+                                        foreach (var id in workout.TagsIds)
+                                        {
+                                            if (tagsDictionary.TryGetValue(id, out var name))
+                                                tagNamesToDisplay.Add(name);
+                                            else
+                                                tagNamesToDisplay.Add("?");
+                                        }
+                                    }
+                                }
+
+                                @if (tagNamesToDisplay.Any())
+                                {
+                                    @foreach (var tagName in tagNamesToDisplay)
+                                    {
+                                        <span class="badge bg-light text-dark border me-1 mb-1">@tagName</span>
+                                    }
+                                }
+                                else 
+                                {
+                                    <span class="text-muted small fst-italic">Без тегів</span>
+                                }
+                            </div>
+                            
+                            <a href="/workout/@workout.Id" class="btn btn-dark btn-sm w-100 mt-3 rounded-pill text-decoration-none">
+                                Відкрити
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<style>
+    .workout-card { transition: transform 0.2s, box-shadow 0.2s; }
+    .workout-card:hover { transform: translateY(-5px); box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important; }
+    .like-btn { transition: transform 0.2s; }
+    .like-btn:active { transform: scale(1.2); }
+    .btn-danger { background-color: #8A0000; border-color: #8A0000; }
+</style>
+
+@code {
+    // 👇 ДВА СПИСКА ДАННЫХ
+    // allWorkouts - хранит ВСЕ тренировки, загруженные с сервера (по текущему тегу)
+    // filteredWorkouts - хранит то, что мы показываем на экране (с учетом поиска)
+    private List<WorkoutDto> allWorkouts = new List<WorkoutDto>();
+    private List<WorkoutDto> filteredWorkouts = new List<WorkoutDto>();
+    
+    private List<TagDto> allTags = new List<TagDto>();
+    private Dictionary<string, string> tagsDictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+    private HashSet<string> likedWorkoutIds = new HashSet<string>();
+    
+    private string searchTerm = "";
+    private string? selectedTagName = null;
+    private bool isLoading = true;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LoadData(initialLoad: true);
+        }
+    }
+
+    private async Task LoadData(bool initialLoad = false)
+    {
+        isLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            var client = await GetHttpClientWithToken();
+
+            // 1. Загрузка тегов (только при старте)
+            if (initialLoad)
+            {
+                try 
+                {
+                    var tagsResponse = await client.GetFromJsonAsync<List<TagDto>>("/api/workoutsTags");
+                    if (tagsResponse != null)
+                    {
+                        allTags = tagsResponse;
+                        tagsDictionary = tagsResponse.ToDictionary(t => t.Id, t => t.Name, StringComparer.OrdinalIgnoreCase);
+                    }
+                }
+                catch { }
+            }
+
+            // 2. Формируем URL.
+            // ВАЖНО: Мы НЕ отправляем 'Name' на сервер, если хотим искать локально по всем загруженным.
+            // Мы просим сервер вернуть все тренировки (или отфильтрованные только по тегу),
+            // а поиск текста будем делать в браузере.
+            
+            var url = "/api/workouts";
+            if (!string.IsNullOrEmpty(selectedTagName))
+            {
+                url += $"?TagName={selectedTagName}";
+            }
+            
+            var workoutsResponse = await client.GetFromJsonAsync<List<WorkoutDto>>(url);
+            if (workoutsResponse != null)
+            {
+                allWorkouts = workoutsResponse;
+                
+                // Сразу применяем фильтр (вдруг в строке поиска уже что-то написано)
+                ApplyLocalFilter();
+            }
+
+            // 3. Загрузка лайков
+            if (initialLoad)
+            {
+                try 
+                {
+                    var userProfile = await client.GetFromJsonAsync<UserProfileDto>("/api/users/me");
+                    if (userProfile?.FavoriteWorkoutsIds != null)
+                    {
+                        likedWorkoutIds = new HashSet<string>(userProfile.FavoriteWorkoutsIds);
+                    }
+                }
+                catch {}
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Помилка: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    // 👇 МЕТОД 1: Обработчик ввода текста
+    private void OnSearchInput(ChangeEventArgs e)
+    {
+        searchTerm = e.Value?.ToString() ?? "";
+        ApplyLocalFilter();
+    }
+
+    // 👇 МЕТОД 2: Локальная фильтрация (сердце поиска)
+    private void ApplyLocalFilter()
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm))
+        {
+            // Если поиск пуст - показываем всё, что загрузили
+            filteredWorkouts = new List<WorkoutDto>(allWorkouts);
+        }
+        else
+        {
+            // Иначе фильтруем. StringComparison.OrdinalIgnoreCase игнорирует регистр (А == а)
+            filteredWorkouts = allWorkouts
+                .Where(w => w.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+    }
+
+    private async Task FilterByTag(string? tagName)
+    {
+        selectedTagName = tagName;
+        // При смене тега мы делаем новый запрос к API, чтобы получить список для этого тега
+        await LoadData();
+    }
+    
+    private void ResetFilters()
+    {
+        searchTerm = "";
+        selectedTagName = null;
+        // Перезагружаем "Всё"
+        _ = LoadData();
+    }
+
+    private async Task ToggleLike(string workoutId)
+    {
+        var token = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "accessToken");
+        if (string.IsNullOrEmpty(token)) 
+        {
+            NavigationManager.NavigateTo("/login");
+            return;
+        }
+
+        bool isLiked = likedWorkoutIds.Contains(workoutId);
+        if (isLiked) likedWorkoutIds.Remove(workoutId);
+        else likedWorkoutIds.Add(workoutId);
+
+        try
+        {
+            var client = await GetHttpClientWithToken();
+            var response = await client.PutAsync($"/api/users/likeButton/{workoutId}", null);
+            if (!response.IsSuccessStatusCode) throw new Exception();
+        }
+        catch
+        {
+            if (isLiked) likedWorkoutIds.Add(workoutId);
+            else likedWorkoutIds.Remove(workoutId);
+        }
+    }
+
+    private async Task<HttpClient> GetHttpClientWithToken()
+    {
+        var client = HttpClientFactory.CreateClient("Api");
+        var token = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "accessToken");
+        if (!string.IsNullOrEmpty(token))
+        {
+            client.DefaultRequestHeaders.Authorization = 
+                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        }
+        return client;
+    }
+
+    public class WorkoutDto
+    {
+        public string Id { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string Description { get; set; } = "";
+        
+        [JsonPropertyName("tagsIds")]
+        public List<string>? TagsIds { get; set; }
+
+        [JsonPropertyName("tags")]
+        public List<TagDto>? Tags { get; set; }
+    }
+
+    public class TagDto
+    {
+        public string Id { get; set; } = "";
+        public string Name { get; set; } = "";
+    }
+
+    public class UserProfileDto
+    {
+        [JsonPropertyName("favoriteWorkoutsIds")] 
+        public List<string>? FavoriteWorkoutsIds { get; set; }
+    }
+}

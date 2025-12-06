@@ -1,38 +1,48 @@
 using practppi.Components;
-
+using practppi.Services;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Authentication.Cookies; // Нужно для устранения краша
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddHttpClient("Api", client =>
 {
-    // Указываем базовый адрес твоего бэкенда (из Swagger)
     client.BaseAddress = new Uri("http://localhost:5143"); 
 });
 
+// 👇 ВОЗВРАЩАЕМ ЭТО, чтобы устранить ошибку "No authenticationScheme"
+// Но благодаря изменению в Profile.razor, это НЕ вызовет редирект.
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.Cookie.Name = "auth_token";
+        options.LoginPath = "/login";
+    });
+    
+builder.Services.AddAuthorization();
 
+builder.Services.AddCascadingAuthenticationState();
+builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
 
-// Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
-    
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
-
 app.UseStaticFiles();
 app.UseAntiforgery();
 
-app.MapRazorComponents<App>()
+app.UseAuthentication();
+app.UseAuthorization();
 
+app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
 app.Run();

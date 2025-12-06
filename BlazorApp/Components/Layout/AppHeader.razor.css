@@ -1,0 +1,22 @@
+/* Этот файл применяется ТОЛЬКО к AppHeader.razor.
+   Мы перенесли сюда стили из MainLayout.razor.css 
+*/
+
+.navbar {
+    background-color: #8A0000;
+}
+
+.custom-font {
+    font-family: 'Jaro', sans-serif !important;
+    font-size: 50px !important; /* Твой увеличенный шрифт */
+    text-decoration: none; /* Убираем подчеркивание */
+}
+
+/* Добавил немного красоты для ссылок, чтобы было как в меню */
+.nav-link {
+    transition: opacity 0.3s;
+}
+
+.nav-link:hover {
+    opacity: 0.8;
+}

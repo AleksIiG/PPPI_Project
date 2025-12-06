@@ -1,0 +1,335 @@
+@page "/profile"
+@rendermode InteractiveServer
+
+@using System.Net.Http.Json
+@using System.Text.Json
+@using System.Text.Json.Serialization
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization 
+@using practppi.Services 
+
+@inject IHttpClientFactory HttpClientFactory
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthStateProvider
+
+<AuthorizeView>
+    <Authorized>
+        <div class="container mt-4 mb-5">
+            <div class="row">
+                <!-- БЛОК 1: Інформація про користувача -->
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-body text-center">
+                            <!-- Аватарка завжди є -->
+                            <img src="images/account-icon.png" class="rounded-circle mb-3" style="width: 100px; height: 100px; object-fit: cover; background: #eee;" />
+                            
+                            <!-- 
+                               Якщо дані є - показуємо. 
+                               Якщо немає - просто показуємо пусте місце або дефолтне ім'я, без спінерів.
+                            -->
+                            <h4 class="fw-bold">@(userInfo?.Username ?? "Користувач")</h4>
+                            <p class="text-muted">@(userInfo?.Email ?? "")</p>
+                            
+                            <button class="btn btn-outline-danger btn-sm mt-2" @onclick="Logout">Вийти з акаунту</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- БЛОК 2: Параметри тіла -->
+                <div class="col-md-8 mb-4">
+                    <div class="card shadow-sm border-0 h-100">
+                        <div class="card-header bg-white fw-bold d-flex justify-content-between align-items-center">
+                            <span>Мої фізичні параметри</span>
+                            <a href="/body-parameters" class="text-decoration-none" style="color: #8A0000; font-size: 0.9rem;">✎ Редагувати</a>
+                        </div>
+                        <div class="card-body d-flex justify-content-around align-items-center">
+                            <div class="text-center">
+                                <h2 class="fw-bold m-0" style="color: #8A0000;">@(userParams.Weight?.ToString() ?? "--")</h2>
+                                <span class="text-muted small">Вага (кг)</span>
+                            </div>
+                            <div style="border-left: 1px solid #eee; height: 40px;"></div>
+                            <div class="text-center">
+                                <h2 class="fw-bold m-0" style="color: #8A0000;">@(userParams.Height?.ToString() ?? "--")</h2>
+                                <span class="text-muted small">Зріст (см)</span>
+                            </div>
+                            <div style="border-left: 1px solid #eee; height: 40px;"></div>
+                            <div class="text-center">
+                                <h3 class="fw-bold m-0 text-dark">
+                                    @(userParams.Gender == "Male" ? "Чол" : "Жін")
+                                </h3>
+                                <span class="text-muted small">Стать</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- БЛОК 3: Улюблені тренування -->
+            <div class="mt-4">
+                <h3 class="fw-bold mb-4" style="color: #8A0000; font-family: 'Jaro', sans-serif;">
+                    Мої улюблені тренування ❤️
+                </h3>
+
+                <!-- 
+                   Я прибрав блок 'if (isLoading)', який показував спінер.
+                   Тепер, поки вантажиться, просто нічого не показується.
+                   Якщо список порожній - теж нічого не показуємо (або можна повернути блок "Список порожній", якщо захочеш).
+                -->
+                
+                @if (favoriteWorkouts != null && favoriteWorkouts.Any())
+                {
+                    <div class="row g-4">
+                        @foreach (var workout in favoriteWorkouts)
+                        {
+                            <div class="col-md-6 col-lg-4">
+                                <div class="card h-100 shadow-sm border-0 workout-card">
+                                    <div class="card-body d-flex flex-column">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <h5 class="card-title fw-bold text-dark mb-0">@workout.Name</h5>
+                                            
+                                            <!-- Кнопка видалення -->
+                                            <button class="btn btn-link p-0 text-decoration-none like-btn" 
+                                                    @onclick="() => RemoveFromFavorites(workout.Id)" 
+                                                    title="Прибрати з улюблених">
+                                                <span style="font-size: 1.5rem; color: #dc3545;">❤️</span>
+                                            </button>
+                                        </div>
+
+                                        <p class="card-text text-muted flex-grow-1 small">
+                                            @if (!string.IsNullOrEmpty(workout.Description) && workout.Description.Length > 100)
+                                            {
+                                                @workout.Description.Substring(0, 100)<span>...</span>
+                                            }
+                                            else
+                                            {
+                                                @workout.Description
+                                            }
+                                        </p>
+
+                                        <!-- Теги -->
+                                        <div class="mt-3 pt-3 border-top">
+                                            @{
+                                                var tagNamesToDisplay = new List<string>();
+                                                if (workout.Tags != null && workout.Tags.Any())
+                                                {
+                                                    tagNamesToDisplay.AddRange(workout.Tags.Select(t => t.Name));
+                                                }
+                                                else if (workout.TagsIds != null && workout.TagsIds.Any())
+                                                {
+                                                    foreach (var id in workout.TagsIds)
+                                                    {
+                                                        if (tagsDictionary.TryGetValue(id, out var name))
+                                                            tagNamesToDisplay.Add(name);
+                                                    }
+                                                }
+                                            }
+
+                                            @if (tagNamesToDisplay.Any())
+                                            {
+                                                @foreach (var tagName in tagNamesToDisplay)
+                                                {
+                                                    <span class="badge bg-light text-dark border me-1 mb-1">@tagName</span>
+                                                }
+                                            }
+                                            else 
+                                            {
+                                                <span class="text-muted small fst-italic">Без тегів</span>
+                                            }
+                                        </div>
+                                        
+                                        <button class="btn btn-dark btn-sm w-100 mt-3 rounded-pill">
+                                            Відкрити
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <!-- Для гостей теж прибираємо "страшні" повідомлення, просто кнопка входу -->
+        <div class="container mt-5 text-center">
+            <a href="/login" class="btn btn-primary">Увійти в систему</a>
+        </div>
+    </NotAuthorized>
+</AuthorizeView>
+
+<style>
+    .workout-card { transition: transform 0.2s, box-shadow 0.2s; }
+    .workout-card:hover { transform: translateY(-5px); box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important; }
+    .like-btn { transition: transform 0.2s; }
+    .like-btn:active { transform: scale(1.2); }
+</style>
+
+@code {
+    [CascadingParameter] private Task<AuthenticationState> authenticationStateTask { get; set; }
+    
+    private UserProfileDto? userInfo;
+    private UserBodyParams userParams = new UserBodyParams();
+    
+    private List<WorkoutDto> favoriteWorkouts = new List<WorkoutDto>();
+    private Dictionary<string, string> tagsDictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var storedParams = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "myBodyParams");
+            if (!string.IsNullOrEmpty(storedParams))
+            {
+                try { userParams = JsonSerializer.Deserialize<UserBodyParams>(storedParams) ?? new UserBodyParams(); } catch {}
+            }
+
+            var authState = await authenticationStateTask;
+            var user = authState.User;
+            if (user.Identity != null && user.Identity.IsAuthenticated)
+            {
+                userInfo = new UserProfileDto 
+                { 
+                    Username = user.Identity.Name ?? "Користувач",
+                    Email = user.FindFirst(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value ?? ""
+                };
+                
+                await LoadFavoriteWorkouts();
+            }
+            
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadFavoriteWorkouts()
+    {
+        try
+        {
+            var client = await GetHttpClientWithToken();
+
+            var response = await client.GetAsync("/api/users/me");
+            if (response.IsSuccessStatusCode)
+            {
+                var jsonString = await response.Content.ReadAsStringAsync();
+                
+                // Зберігаємо лог в консолі для тебе (розробника), але юзер його не бачить
+                Console.WriteLine($"DEBUG: RAW PROFILE JSON: {jsonString}");
+
+                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                var userProfileApi = JsonSerializer.Deserialize<UserProfileDto>(jsonString, options);
+                
+                var likedIdsList = userProfileApi?.FavoriteWorkoutsIds 
+                                   ?? userProfileApi?.Favorites 
+                                   ?? userProfileApi?.LikedWorkouts 
+                                   ?? new List<string>();
+
+                if (likedIdsList.Any())
+                {
+                    var likedIdsSet = new HashSet<string>(likedIdsList, StringComparer.OrdinalIgnoreCase);
+
+                    try 
+                    {
+                        var tagsResponse = await client.GetFromJsonAsync<List<TagDto>>("/api/workoutsTags");
+                        if (tagsResponse != null)
+                        {
+                            tagsDictionary = tagsResponse.ToDictionary(t => t.Id, t => t.Name, StringComparer.OrdinalIgnoreCase);
+                        }
+                    }
+                    catch {}
+
+                    var allWorkouts = await client.GetFromJsonAsync<List<WorkoutDto>>("/api/workouts");
+                    
+                    if (allWorkouts != null)
+                    {
+                        favoriteWorkouts = allWorkouts
+                            .Where(w => likedIdsSet.Contains(w.Id))
+                            .ToList();
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            // Помилки тільки в консоль розробника
+            Console.WriteLine($"Silent Error: {ex.Message}");
+        }
+        finally
+        {
+            StateHasChanged();
+        }
+    }
+
+    private async Task RemoveFromFavorites(string workoutId)
+    {
+        var workoutToRemove = favoriteWorkouts.FirstOrDefault(w => w.Id == workoutId);
+        if (workoutToRemove != null)
+        {
+            favoriteWorkouts.Remove(workoutToRemove);
+            StateHasChanged();
+        }
+
+        try
+        {
+            var client = await GetHttpClientWithToken();
+            await client.PutAsync($"/api/users/likeButton/{workoutId}", null);
+        }
+        catch { }
+    }
+
+    private async Task Logout()
+    {
+        var customAuthProvider = (CustomAuthStateProvider)AuthStateProvider;
+        await customAuthProvider.MarkUserAsLoggedOut();
+        NavigationManager.NavigateTo("/", forceLoad: true);
+    }
+    
+    private async Task<HttpClient> GetHttpClientWithToken()
+    {
+        var client = HttpClientFactory.CreateClient("Api");
+        var token = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "accessToken");
+        if (!string.IsNullOrEmpty(token))
+        {
+            client.DefaultRequestHeaders.Authorization = 
+                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        }
+        return client;
+    }
+
+    public class UserProfileDto
+    {
+        public string Username { get; set; } = "";
+        public string Email { get; set; } = "";
+        
+        public List<string>? FavoriteWorkoutsIds { get; set; }
+        
+        [JsonPropertyName("favorites")]
+        public List<string>? Favorites { get; set; }
+        
+        [JsonPropertyName("likedWorkouts")]
+        public List<string>? LikedWorkouts { get; set; }
+    }
+
+    public class UserBodyParams
+    {
+        public string Gender { get; set; } = "Male";
+        public double? Height { get; set; }
+        public double? Weight { get; set; }
+    }
+    
+    public class WorkoutDto
+    {
+        public string Id { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string Description { get; set; } = "";
+        [JsonPropertyName("tagsIds")]
+        public List<string>? TagsIds { get; set; }
+        [JsonPropertyName("tags")]
+        public List<TagDto>? Tags { get; set; }
+    }
+
+    public class TagDto
+    {
+        public string Id { get; set; } = "";
+        public string Name { get; set; } = "";
+    }
+}

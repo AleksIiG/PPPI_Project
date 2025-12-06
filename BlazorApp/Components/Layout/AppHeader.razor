@@ -1,0 +1,60 @@
+@rendermode InteractiveServer
+@using Microsoft.AspNetCore.Components.Authorization
+@using practppi.Services 
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthStateProvider
+
+<!-- Класс navbar підтягне стилі з AppHeader.razor.css -->
+<header class="navbar navbar-expand-lg navbar-dark">
+    <div class="container-fluid d-flex justify-content-between align-items-center">
+        
+        <a class="navbar-brand fw-bold fs-3 text-white custom-font" href="/">Gym Helper</a>
+
+        <div class="d-flex align-items-center">
+            <a class="nav-link text-white mx-3" href="/trainers">Тренера</a>
+            <a class="nav-link text-white mx-3" href="/templates">Шаблони</a>
+            <span class="text-white mx-3">Ua</span>
+
+            <AuthorizeView>
+                <Authorized>
+                    <!-- 
+                       ✅ КОЛИ УВІЙШОВ:
+                       Показуємо кнопку "Профіль", яка веде на /profile
+                    -->
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="text-white fw-bold me-2">Привіт, @context.User.Identity?.Name</span>
+                        
+                        <a href="/profile" class="btn btn-outline-light btn-sm fw-bold">
+                            Профіль
+                        </a>
+
+                        <!-- Кнопку Вихід можна залишити тут або видалити, якщо вона є в профілі -->
+                        <button class="btn btn-outline-warning btn-sm" @onclick="Logout">
+                            Вихід
+                        </button>
+                    </div>
+                </Authorized>
+                <NotAuthorized>
+                    <!-- 
+                       ✅ КОЛИ НЕ УВІЙШОВ (Гість):
+                       Показуємо кнопку "Почати", яка веде на /register
+                    -->
+                    <a class="btn btn-light d-flex align-items-center px-3 py-2" href="/register" style="text-decoration: none;">
+                        <span class="me-2 fw-bold">Почати</span>
+                        <img src="images/account-icon.png" alt="Account" style="width: 24px; height: 24px;" />
+                    </a>
+                </NotAuthorized>
+            </AuthorizeView>
+
+        </div>
+    </div>
+</header>
+
+@code {
+    private async Task Logout()
+    {
+        var customAuthProvider = (CustomAuthStateProvider)AuthStateProvider;
+        await customAuthProvider.MarkUserAsLoggedOut();
+        NavigationManager.NavigateTo("/", forceLoad: true);
+    }
+}

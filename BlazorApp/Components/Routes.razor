@@ -1,6 +1,35 @@
-﻿<Router AppAssembly="typeof(Program).Assembly">
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using practppi.Components.Layout
+@inject NavigationManager NavigationManager
+
+<Router AppAssembly="typeof(Program).Assembly">
     <Found Context="routeData">
-        <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
+        <!-- 
+           👇 БЫЛО: RouteView
+           👇 СТАЛО: AuthorizeRouteView
+           Теперь Blazor сам проверяет токен.
+        -->
+        <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)">
+            <NotAuthorized>
+                <!-- Если токена нет - показываем это или кидаем на логин -->
+                <div class="container mt-5 text-center">
+                    <h3>Доступ заборонено</h3>
+                    <p>Ви повинні увійти в систему.</p>
+                    <a href="/login" class="btn btn-primary">Увійти</a>
+                </div>
+            </NotAuthorized>
+            <Authorizing>
+                <div class="text-center mt-5">Перевірка доступу...</div>
+            </Authorizing>
+        </AuthorizeRouteView>
+        
         <FocusOnNavigate RouteData="routeData" Selector="h1" />
     </Found>
+    <NotFound>
+        <LayoutView Layout="typeof(MainLayout)">
+            <div class="container mt-5">
+                <p>Сторінку не знайдено.</p>
+            </div>
+        </LayoutView>
+    </NotFound>
 </Router>

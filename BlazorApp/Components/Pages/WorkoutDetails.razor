@@ -1,0 +1,206 @@
+@page "/workout/{Id}"
+@rendermode InteractiveServer
+@using System.Net.Http.Json
+@using System.Text.Json
+@using System.Text.Json.Serialization
+@inject IHttpClientFactory HttpClientFactory
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+<div class="container mt-4 mb-5">
+    <a href="/workouts" class="btn btn-outline-secondary btn-sm mb-3">
+        ← Назад до списку
+    </a>
+
+    @if (isLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-danger" role="status"></div>
+            <p class="text-muted mt-2">Завантажуємо деталі...</p>
+        </div>
+    }
+    else if (workout == null)
+    {
+        <div class="alert alert-warning">
+            Тренування не знайдено.
+            @if (!string.IsNullOrEmpty(debugError)) 
+            {
+                <br/><small class="text-muted">Debug info: @debugError</small>
+            }
+        </div>
+    }
+    else
+    {
+        <!-- КАРТКА ТРЕНУВАННЯ -->
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body">
+                <h2 class="fw-bold mb-3" style="color: #8A0000; font-family: 'Jaro', sans-serif;">
+                    @workout.Name
+                </h2>
+
+                <!-- ТЕГИ ТРЕНУВАННЯ -->
+                <div class="mb-3">
+                    @if (workout.Tags != null && workout.Tags.Any())
+                    {
+                        @foreach (var tag in workout.Tags)
+                        {
+                            <span class="badge bg-light text-dark border me-1">@tag.Name</span>
+                        }
+                    }
+                    else
+                    {
+                        <span class="text-muted small fst-italic">Без тегів</span>
+                    }
+                </div>
+
+                <p class="lead text-muted" style="font-size: 1.1rem;">
+                    @workout.Description
+                </p>
+            </div>
+        </div>
+
+        <!-- СПИСОК ВПРАВ -->
+        <h4 class="fw-bold mb-3">Вправи (@(workout.Exercise?.Count ?? 0))</h4>
+
+        @if (workout.Exercise == null || workout.Exercise.Count == 0)
+        {
+            <div class="alert alert-light border">
+                У цьому тренуванні поки немає вправ.
+                <div class="small text-muted mt-2" style="font-size: 0.8rem;">
+                    DEBUG: Received JSON field 'exercise' is empty or null.
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="list-group shadow-sm">
+                @for (int i = 0; i < workout.Exercise.Count; i++)
+                {
+                    var exercise = workout.Exercise[i];
+                    <div class="list-group-item border-0 border-bottom p-4">
+                        <div class="d-flex align-items-start">
+                            <!-- Номер -->
+                            <div class="me-3 d-flex align-items-center justify-content-center rounded-circle text-white fw-bold" 
+                                 style="width: 40px; height: 40px; background-color: #8A0000; flex-shrink: 0;">
+                                @(i + 1)
+                            </div>
+                            
+                            <!-- Деталі вправи -->
+                            <div class="flex-grow-1">
+                                <h5 class="fw-bold mb-1">@exercise.Name</h5>
+                                <p class="text-muted mb-2 small">@exercise.Description</p>
+                                
+                                <!-- ТЕГИ ВПРАВИ (напр. Popka, Triceps) -->
+                                @if (exercise.ExerTags != null && exercise.ExerTags.Any())
+                                {
+                                    <div>
+                                        @foreach (var tag in exercise.ExerTags)
+                                        {
+                                            <span class="badge bg-secondary opacity-75 me-1" style="font-size: 0.7rem;">@tag.Name</span>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    }
+</div>
+
+@code {
+    [Parameter] public string Id { get; set; } = "";
+
+    private WorkoutDetailsDto? workout;
+    private bool isLoading = true;
+    private string debugError = "";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LoadWorkoutDetails();
+        }
+    }
+
+    private async Task LoadWorkoutDetails()
+    {
+        isLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            var client = await GetHttpClientWithToken();
+
+            // Отримуємо JSON (регістр ігнорується налаштуваннями)
+            var response = await client.GetAsync($"/api/workouts/{Id}");
+            
+            if (response.IsSuccessStatusCode)
+            {
+                var jsonString = await response.Content.ReadAsStringAsync();
+                
+                // ВАЖЛИВО: PropertyNameCaseInsensitive = true дозволяє
+                // мапити 'exercise' (JSON) на 'Exercise' (C#)
+                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                workout = JsonSerializer.Deserialize<WorkoutDetailsDto>(jsonString, options);
+            }
+            else
+            {
+                debugError = $"API Error: {response.StatusCode}";
+            }
+        }
+        catch (Exception ex)
+        {
+            debugError = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task<HttpClient> GetHttpClientWithToken()
+    {
+        var client = HttpClientFactory.CreateClient("Api");
+        var token = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "accessToken");
+        if (!string.IsNullOrEmpty(token))
+        {
+            client.DefaultRequestHeaders.Authorization = 
+                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        }
+        return client;
+    }
+
+    // --- ОНОВЛЕНІ DTO (ПІД ТВІЙ JSON) ---
+    public class WorkoutDetailsDto
+    {
+        public string Id { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string Description { get; set; } = "";
+        
+        // Поле 'tags' з твого JSON
+        public List<TagDto>? Tags { get; set; }
+        
+        // Поле 'exercise' з твого JSON
+        // (називаємо Exercise, бо так у JSON, атрибут не потрібен через CaseInsensitive)
+        public List<ExerciseDetailDto>? Exercise { get; set; }
+    }
+
+    public class ExerciseDetailDto
+    {
+        public string Id { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string Description { get; set; } = "";
+        
+        // Поле 'exerTags' з твого JSON
+        public List<TagDto>? ExerTags { get; set; }
+    }
+
+    public class TagDto
+    {
+        public string Id { get; set; } = "";
+        public string Name { get; set; } = "";
+    }
+}
