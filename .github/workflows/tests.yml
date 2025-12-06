@@ -12,7 +12,7 @@ env:
 jobs:
 
 # =======================
-# 🧪 TEST
+#  TEST
 # =======================
   test:
     runs-on: ubuntu-latest
@@ -27,18 +27,18 @@ jobs:
     - name: Restore
       run: dotnet restore "Project_PPPI.sln"
 
-    # ✅ ГАРАНТОВАНО створюємо папку
+    #  ГАРАНТОВАНО створюємо папку
     - name: Create TestResults folder
       run: mkdir -p TestResults
 
-    # ✅ ЗАПУСК ТЕСТІВ СТРОГО ПО .csproj
+    #  ЗАПУСК ТЕСТІВ СТРОГО ПО .csproj
     - name: Run Controller Tests
       run: dotnet test Tests/ControllersTests/ControllersTests.csproj --logger "trx;LogFileName=ControllersTests.trx" --results-directory TestResults || true
 
     - name: Run Service Tests
       run: dotnet test Tests/ServicesTests/ServicesTests.csproj --logger "trx;LogFileName=ServicesTests.trx" --results-directory TestResults || true
 
-    # ✅ АРТЕФАКТ ТЕСТІВ ЗАВЖДИ ЗАВАНТАЖУЄТЬСЯ
+    #  АРТЕФАКТ ТЕСТІВ ЗАВЖДИ ЗАВАНТАЖУЄТЬСЯ
     - name: Upload Test Artifact
       if: always()
       uses: actions/upload-artifact@v4
@@ -48,7 +48,7 @@ jobs:
 
 
 # =======================
-# 🏗 BUILD
+#  BUILD
 # =======================
   build:
     runs-on: ubuntu-latest
@@ -67,13 +67,13 @@ jobs:
     - name: Build
       run: dotnet build "Project_PPPI.sln" --configuration ${{ env.BUILD_CONFIG }}
 
-    # ✅ ПРАВИЛЬНИЙ publish
+    #  ПРАВИЛЬНИЙ publish
     - name: Publish
       run: |
         mkdir -p publish
         dotnet publish "Project_PPPI.sln" -c ${{ env.BUILD_CONFIG }} -o publish
 
-    # ✅ АРТЕФАКТ ЗБІРКИ
+    #  АРТЕФАКТ ЗБІРКИ
     - name: Upload Build Artifact
       uses: actions/upload-artifact@v4
       with:
@@ -82,7 +82,7 @@ jobs:
 
 
 # =======================
-# 🚀 DEPLOY
+#  DEPLOY
 # =======================
   deploy:
     runs-on: ubuntu-latest
@@ -106,4 +106,4 @@ jobs:
       run: |
         echo "Deploying with token: ${DEPLOY_TOKEN:0:4}****"
         ls -la ./artifact
-        echo "✅ Deploy success"
+        echo " Deploy success"
