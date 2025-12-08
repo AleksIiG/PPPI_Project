@@ -107,7 +107,7 @@ namespace api.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize]
         public async Task<IActionResult> Create([FromBody] CreateWorkoutDto workoutDto)
         {
             if (!ModelState.IsValid)
