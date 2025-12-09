@@ -32,7 +32,7 @@ namespace api.Controllers
         }
 
         [HttpGet]
-        [Authorize]
+        [AllowAnonymous]
         public async Task<IActionResult> GetAll([FromQuery] QueryObjectForWorkouts query)
         {
             var workouts = await _workoutService.GetAllAsync(query);
@@ -85,7 +85,7 @@ namespace api.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize]
+        [AllowAnonymous]
         public async Task<IActionResult> GetById([FromRoute] string id)
         {
             if (!ModelState.IsValid)
