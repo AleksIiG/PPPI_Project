@@ -1,0 +1,383 @@
+@page "/workout-builder"
+@rendermode InteractiveServer
+
+@using System.Net.Http.Json
+@using System.Text.Json
+@using System.Text.Json.Serialization
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization 
+@using System.Security.Claims 
+@using practppi.Services
+
+@inject IHttpClientFactory HttpClientFactory
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthStateProvider
+
+<AuthorizeView>
+    <Authorized>
+        <div class="container mt-4 mb-5">
+            <h2 class="fw-bold mb-4 page-title">
+                Конструктор тренування
+            </h2>
+
+            <div class="row">
+                <!-- ЛІВА КОЛОНКА (Створення) -->
+                <div class="col-lg-4 mb-4">
+                    <div class="card shadow-sm border-0 sticky-card">
+                        <div class="card-header card-header-custom">
+                            Нове тренування
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label small text-muted">Назва тренування</label>
+                                <input type="text" class="form-control fw-bold" @bind="newWorkoutName" placeholder="Назва" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label small text-muted">Опис</label>
+                                <textarea class="form-control" rows="2" @bind="newWorkoutDesc" placeholder="Короткий опис..."></textarea>
+                            </div>
+
+                            <h6 class="fw-bold mt-4 border-bottom pb-2">
+                                Вправи (@selectedExercises.Count)
+                            </h6>
+                            
+                            @if (selectedExercises.Count == 0)
+                            {
+                                <div class="text-center py-4 text-muted border rounded bg-light border-dashed">
+                                    Додайте вправи зі списку
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="list-group mb-3 scrollable-list">
+                                    @for (int i = 0; i < selectedExercises.Count; i++)
+                                    {
+                                        var ex = selectedExercises[i];
+                                        <div class="list-group-item px-2 py-2">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <div class="d-flex flex-column w-100">
+                                                    <div class="d-flex align-items-center mb-1">
+                                                        <span class="exercise-number me-2">@(i + 1)</span>
+                                                        <span class="fw-bold exercise-name-truncate" title="@ex.Name">@ex.Name</span>
+                                                    </div>
+                                                    <!-- Теги вправи (маленькі) -->
+                                                    @TagBadges(ex, isSelectedList: true)
+                                                </div>
+                                                <button class="btn btn-sm text-danger p-0 ms-2" @onclick="() => RemoveExercise(ex)">✕</button>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+
+                            <button class="btn btn-custom w-100 mt-3 py-2" 
+                                    disabled="@(selectedExercises.Count == 0 || string.IsNullOrWhiteSpace(newWorkoutName) || isSaving)"
+                                    @onclick="SaveWorkout">
+                                @if (isSaving)
+                                {
+                                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                }
+                                else
+                                {
+                                    <span>Зберегти тренування</span>
+                                }
+                            </button>
+                            
+                            @if (!string.IsNullOrEmpty(saveError))
+                            {
+                                <div class="alert alert-danger mt-3 small text-break">
+                                    <strong>@saveError</strong>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ПРАВА КОЛОНКА (Бібліотека) -->
+                <div class="col-lg-8">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h4 class="fw-bold mb-0">Бібліотека вправ</h4>
+                            </div>
+                            
+                            <!-- Пошук та Фільтри -->
+                            <div class="row g-2 mb-3">
+                                <div class="col-md-6">
+                                    <input type="text" class="form-control" placeholder="Пошук вправи" 
+                                           @bind="searchTerm" @bind:event="oninput" @onkeyup="SearchExercises" />
+                                </div>
+                                <div class="col-md-6">
+                                    <select class="form-select" @onchange="FilterByTag">
+                                        <option value="">Всі категорії</option>
+                                        @foreach (var tag in exerciseTags)
+                                        {
+                                            <option value="@tag.Id">@tag.Name</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Список вправ -->
+                            @if (isLoading)
+                            {
+                                <div class="text-center py-5">
+                                    <div class="spinner-border text-danger" role="status"></div>
+                                </div>
+                            }
+                            else if (filteredExercises.Count == 0)
+                            {
+                                <div class="text-center py-5 text-muted">
+                                    Вправ не знайдено.
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="row g-3">
+                                    @foreach (var exercise in filteredExercises)
+                                    {
+                                        <div class="col-md-6">
+                                            <div class="card h-100 exercise-card @(selectedExercises.Contains(exercise) ? "selected" : "")" 
+                                                 @onclick="() => ToggleExercise(exercise)">
+                                                <div class="card-body p-3">
+                                                    <div class="d-flex justify-content-between align-items-start">
+                                                        <h6 class="fw-bold mb-1">@exercise.Name</h6>
+                                                        <!-- 
+                                                            ЛОГІКА ІКОНКИ:
+                                                            Завжди показуємо plus.svg.
+                                                            Якщо вибрано -> клас 'selected' (червоний).
+                                                            Якщо ні -> клас 'unselected' (сірий).
+                                                        -->
+                                                        <img src="/images/plus.svg" 
+                                                             alt="Toggle" 
+                                                             class="action-icon @(selectedExercises.Contains(exercise) ? "selected" : "unselected")" />
+                                                    </div>
+                                                    <p class="text-muted small mb-0 exercise-name-truncate">@exercise.Description</p>
+                                                    
+                                                    <!-- Теги вправи (звичайні) -->
+                                                    @TagBadges(exercise)
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <div class="container mt-5 text-center">
+            <h3>Доступ обмежено</h3>
+            <p>Щоб створити власне тренування, потрібно увійти в акаунт.</p>
+            <a href="/login" class="btn btn-primary">Увійти</a>
+        </div>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    [CascadingParameter] private Task<AuthenticationState>? authenticationStateTask { get; set; }
+
+    private List<ExerciseDto> allExercises = new List<ExerciseDto>();
+    private List<ExerciseDto> filteredExercises = new List<ExerciseDto>();
+    private List<TagDto> exerciseTags = new List<TagDto>(); 
+    
+    private List<ExerciseDto> selectedExercises = new List<ExerciseDto>();
+    private string newWorkoutName = "";
+    private string newWorkoutDesc = "";
+    
+    private string searchTerm = "";
+    private string selectedTagId = ""; 
+    private bool isLoading = true;
+    private bool isSaving = false;
+    private string saveError = "";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender) { await LoadData(); }
+    }
+
+    private async Task LoadData()
+    {
+        isLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            var client = await GetHttpClientWithToken();
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+
+            try 
+            {
+                var tagsResponse = await client.GetAsync("/api/exercisesTags");
+                if (tagsResponse.IsSuccessStatusCode)
+                {
+                    exerciseTags = await tagsResponse.Content.ReadFromJsonAsync<List<TagDto>>(options) ?? new List<TagDto>();
+                }
+            } catch (Exception ex) { Console.WriteLine($"Error loading tags: {ex.Message}"); }
+
+            var exResponse = await client.GetAsync("/api/exercises");
+            if (exResponse.IsSuccessStatusCode)
+            {
+                allExercises = await exResponse.Content.ReadFromJsonAsync<List<ExerciseDto>>(options) ?? new List<ExerciseDto>();
+                filteredExercises = new List<ExerciseDto>(allExercises);
+            }
+            else
+            {
+                Console.WriteLine($"Error loading exercises: {exResponse.StatusCode}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Fatal Error: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void SearchExercises(KeyboardEventArgs e) => ApplyFilters();
+    
+    private void FilterByTag(ChangeEventArgs e)
+    {
+        selectedTagId = e.Value?.ToString() ?? "";
+        ApplyFilters();
+    }
+
+    private void ApplyFilters()
+    {
+        var query = allExercises.AsEnumerable();
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+            query = query.Where(e => e.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
+
+        if (!string.IsNullOrWhiteSpace(selectedTagId))
+        {
+            query = query.Where(e => e.ExerTags != null && e.ExerTags.Any(t => t.Id == selectedTagId));
+        }
+
+        filteredExercises = query.ToList();
+    }
+
+    private void ToggleExercise(ExerciseDto ex)
+    {
+        if (selectedExercises.Contains(ex)) selectedExercises.Remove(ex);
+        else selectedExercises.Add(ex);
+    }
+
+    private void RemoveExercise(ExerciseDto ex) => selectedExercises.Remove(ex);
+
+    private async Task SaveWorkout()
+    {
+        isSaving = true;
+        saveError = "";
+        try {
+            if (authenticationStateTask == null) return;
+            var authState = await authenticationStateTask;
+            var user = authState.User;
+            var currentUserId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? user.FindFirst("sub")?.Value ?? user.FindFirst("uid")?.Value;
+
+            if (string.IsNullOrEmpty(currentUserId)) { saveError = "User ID not found"; return; }
+
+            var client = await GetHttpClientWithToken();
+            
+            string? customTagId = null;
+            try {
+                var workoutTags = await client.GetFromJsonAsync<List<TagDto>>("/api/workoutsTags");
+                customTagId = workoutTags?.FirstOrDefault(t => t.Name.Equals("Custom", StringComparison.OrdinalIgnoreCase))?.Id;
+            } catch (Exception ex) 
+            {
+                Console.WriteLine($"Warning: Failed to retrieve 'Custom' tag ID. {ex.Message}");
+            }
+
+            var newWorkout = new WorkoutCreateDto
+            {
+                Name = newWorkoutName,
+                Description = newWorkoutDesc,
+                UserId = currentUserId,
+                ExerciseIds = selectedExercises.Select(e => e.Id).ToList(), 
+                TagsIds = customTagId is not null ? new List<string> { customTagId } : new List<string>()
+            };
+
+            var response = await client.PostAsJsonAsync("/api/workouts", newWorkout);
+            if (response.IsSuccessStatusCode) NavigationManager.NavigateTo("/workouts");
+            else saveError = "Помилка збереження: " + response.StatusCode;
+        }
+        catch (Exception ex) { saveError = ex.Message; }
+        finally { isSaving = false; StateHasChanged(); }
+    }
+
+    private async Task<HttpClient> GetHttpClientWithToken()
+    {
+        var client = HttpClientFactory.CreateClient("Api");
+        var token = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "accessToken");
+        if (!string.IsNullOrEmpty(token))
+            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        return client;
+    }
+
+    // Helper method for tags rendering
+    private RenderFragment TagBadges(ExerciseDto ex, bool isSelectedList = false) => (__builder) =>
+    {
+        if (ex.ExerTags != null && ex.ExerTags.Any())
+        {
+            var containerClasses = isSelectedList ? "ms-3 lh-1" : "mt-2";
+            var badgeClasses = isSelectedList 
+                ? "badge bg-light text-secondary border me-1 mb-1 tag-badge-small" 
+                : "badge bg-secondary text-white me-1 tag-badge mb-1";
+
+            __builder.OpenElement(0, "div");
+            __builder.AddAttribute(1, "class", containerClasses);
+
+            int i = 2;
+            foreach (var tag in ex.ExerTags)
+            {
+                __builder.OpenElement(i++, isSelectedList ? "small" : "span");
+                __builder.AddAttribute(i++, "class", badgeClasses);
+                __builder.AddContent(i++, tag.Name);
+                __builder.CloseElement();
+            }
+            __builder.CloseElement();
+        }
+        else if (!isSelectedList)
+        {
+            __builder.OpenElement(0, "span");
+            __builder.AddAttribute(1, "class", "badge bg-light text-muted border border-dashed me-1 tag-badge");
+            __builder.AddContent(2, "Без тегів");
+            __builder.CloseElement();
+        }
+    };
+
+    // === DTO, УНІФІКОВАНІ ПІД СТРУКТУРУ JSON ===
+
+    public class TagDto
+    {
+        [JsonPropertyName("id")] public string Id { get; set; } = "";
+        public string Name { get; set; } = "";
+    }
+
+    public class ExerciseDto
+    {
+        [JsonPropertyName("id")] public string Id { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string Description { get; set; } = "";
+        
+        [JsonPropertyName("exerTags")]
+        public List<TagDto> ExerTags { get; set; } = new List<TagDto>();
+    }
+
+    public class WorkoutCreateDto
+    {
+        [JsonPropertyName("name")] public string Name { get; set; } = "";
+        [JsonPropertyName("description")] public string Description { get; set; } = "";
+        [JsonPropertyName("userId")] public string UserId { get; set; } = "";
+        [JsonPropertyName("exerciseIds")] public List<string> ExerciseIds { get; set; } = new();
+        [JsonPropertyName("tagsIds")] public List<string> TagsIds { get; set; } = new();
+    }
+}

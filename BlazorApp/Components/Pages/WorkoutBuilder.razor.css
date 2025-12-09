@@ -1,0 +1,119 @@
+/* Заголовок сторінки */
+.page-title {
+    color: #8A0000;
+    font-family: 'Jaro', sans-serif;
+    font-size: 2.5rem;
+}
+
+/* --- ЛІВА КОЛОНКА --- */
+
+.sticky-card {
+    position: sticky;
+    top: 1rem;
+    z-index: 10;
+}
+
+.card-header-custom {
+    background-color: #8A0000;
+    color: white;
+    font-weight: bold;
+}
+
+.scrollable-list {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+}
+
+.empty-state-icon {
+    font-size: 1.5rem;
+}
+
+.btn-custom {
+    background-color: #8A0000;
+    border-color: #8A0000;
+    color: white;
+    font-weight: bold;
+}
+
+.btn-custom:hover {
+    background-color: #a00000;
+    border-color: #a00000;
+    color: white;
+}
+
+.btn-custom:disabled {
+    background-color: #8A0000;
+    border-color: #8A0000;
+    opacity: 0.65;
+}
+
+/* --- ПРАВА КОЛОНКА --- */
+
+.exercise-card {
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    border: 1px solid #dee2e6;
+}
+
+.exercise-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.exercise-card.selected {
+    border-color: #198754; 
+    background-color: #f8fffb;
+}
+
+.exercise-number {
+    font-weight: bold;
+    color: #6c757d;
+    min-width: 20px;
+}
+
+.exercise-name-truncate {
+    max-width: 180px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* === ІКОНКИ ДІЙ (Плюсик) === */
+
+.action-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+    transition: filter 0.3s ease, transform 0.2s ease, opacity 0.3s ease;
+}
+
+/* Стан: Не вибрано (Сірий) */
+.action-icon.unselected {
+    filter: grayscale(100%);
+    opacity: 0.3;
+}
+
+/* Стан: Вибрано (Червоний) */
+.action-icon.selected {
+    /* Фільтр для #8A0000 */
+    filter: invert(10%) sepia(97%) saturate(6262%) hue-rotate(356deg) brightness(93%) contrast(112%);
+    opacity: 1;
+    transform: scale(1.1); /* Трохи збільшуємо для акценту */
+}
+
+/* Ефект наведення на картку */
+.exercise-card:hover .action-icon.unselected {
+    opacity: 0.7; /* Робимо сірий плюсик помітнішим при наведенні */
+}
+
+/* --- ТЕГИ --- */
+
+.tag-badge {
+    font-size: 0.75rem;
+    font-weight: normal;
+}
+
+.tag-badge-small {
+    font-size: 0.65rem !important;
+}

@@ -34,7 +34,7 @@
         <!-- КАРТКА ТРЕНУВАННЯ -->
         <div class="card shadow-sm border-0 mb-4">
             <div class="card-body">
-                <h2 class="fw-bold mb-3" style="color: #8A0000; font-family: 'Jaro', sans-serif;">
+                <h2 class="fw-bold mb-3 page-title">
                     @workout.Name
                 </h2>
 
@@ -53,9 +53,10 @@
                     }
                 </div>
 
-                <p class="lead text-muted" style="font-size: 1.1rem;">
+                <p class="lead text-muted description-text">
                     @workout.Description
                 </p>
+                
             </div>
         </div>
 
@@ -66,7 +67,7 @@
         {
             <div class="alert alert-light border">
                 У цьому тренуванні поки немає вправ.
-                <div class="small text-muted mt-2" style="font-size: 0.8rem;">
+                <div class="small text-muted mt-2 debug-text">
                     DEBUG: Received JSON field 'exercise' is empty or null.
                 </div>
             </div>
@@ -80,8 +81,7 @@
                     <div class="list-group-item border-0 border-bottom p-4">
                         <div class="d-flex align-items-start">
                             <!-- Номер -->
-                            <div class="me-3 d-flex align-items-center justify-content-center rounded-circle text-white fw-bold" 
-                                 style="width: 40px; height: 40px; background-color: #8A0000; flex-shrink: 0;">
+                            <div class="me-3 d-flex align-items-center justify-content-center rounded-circle text-white fw-bold exercise-number">
                                 @(i + 1)
                             </div>
                             
@@ -96,7 +96,7 @@
                                     <div>
                                         @foreach (var tag in exercise.ExerTags)
                                         {
-                                            <span class="badge bg-secondary opacity-75 me-1" style="font-size: 0.7rem;">@tag.Name</span>
+                                            <span class="badge bg-secondary opacity-75 me-1 tag-small">@tag.Name</span>
                                         }
                                     </div>
                                 }
@@ -161,6 +161,7 @@
         }
     }
 
+
     private async Task<HttpClient> GetHttpClientWithToken()
     {
         var client = HttpClientFactory.CreateClient("Api");
@@ -195,6 +196,7 @@
         public string Description { get; set; } = "";
         
         // Поле 'exerTags' з твого JSON
+        [JsonPropertyName("exerTags")]
         public List<TagDto>? ExerTags { get; set; }
     }
 

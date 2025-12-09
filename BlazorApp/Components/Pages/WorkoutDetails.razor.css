@@ -1,0 +1,22 @@
+/* Заголовок сторінки */
+.page-title {
+    color: #8A0000;
+    font-family: 'Jaro', sans-serif;
+}
+
+/* Теги */
+.tag-badge {
+    font-size: 0.8rem;
+    font-weight: normal;
+}
+
+/* Номер вправи в кружечку */
+.number-badge {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    border-radius: 50%;
+}

@@ -1,4 +1,4 @@
-/* Центровка */
+/* Центровка на экране */
 .auth-wrapper {
     display: flex;
     justify-content: center;
@@ -7,14 +7,14 @@
     padding: 1rem;
 }
 
-/* Карточка */
+/* Карточка формы */
 .registration-container {
     background: white;
     padding: 2.5rem;
     border-radius: 16px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
     width: 100%;
-    max-width: 450px;
+    max-width: 420px;
     border: 1px solid #f0f0f0;
 }
 
@@ -22,7 +22,7 @@
 .auth-title {
     text-align: center;
     color: #8A0000;
-    font-family: 'Jaro', sans-serif;
+    font-family: 'Jaro', sans-serif; /* Ваш шрифт */
     font-size: 2rem;
     margin-bottom: 0.5rem;
 }
@@ -34,7 +34,7 @@
     margin-bottom: 2rem;
 }
 
-/* Поля */
+/* Поля ввода */
 .input-field {
     margin-bottom: 1.25rem;
 }
@@ -53,8 +53,8 @@
     border: 1px solid #dee2e6;
     border-radius: 8px;
     font-size: 1rem;
-    background-color: #f9fafb;
     transition: all 0.2s ease;
+    background-color: #f9fafb;
 }
 
 .form-control:focus {
@@ -62,33 +62,6 @@
     box-shadow: 0 0 0 4px rgba(138, 0, 0, 0.1);
     background-color: white;
     outline: none;
-}
-
-/* Чекбокс */
-.checkbox-field {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.5rem;
-}
-
-.form-check-input {
-    width: 1.2em;
-    height: 1.2em;
-    margin-top: 0;
-    border-color: #dee2e6;
-    cursor: pointer;
-}
-
-.form-check-input:checked {
-    background-color: #8A0000;
-    border-color: #8A0000;
-}
-
-.form-check-label {
-    font-size: 0.9rem;
-    color: #555;
-    cursor: pointer;
 }
 
 /* Кнопка */
@@ -125,7 +98,7 @@
     cursor: not-allowed;
 }
 
-/* Ссылки */
+/* Подвал */
 .auth-footer {
     text-align: center;
     margin-top: 1.5rem;
@@ -143,10 +116,9 @@
     text-decoration: underline;
 }
 
-/* Ошибки валидации */
+/* Валидация */
 ::deep .validation-message {
     color: #dc3545;
     font-size: 0.8rem;
     margin-top: 0.25rem;
-    display: block;
 }

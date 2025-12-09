@@ -1,0 +1,98 @@
+/* Центрування на весь екран */
+.rule-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
+    padding: 1rem;
+    background-color: #f3f4f6;
+}
+
+/* Картка правила */
+.rule-card {
+    background: white;
+    padding: 3rem;
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    width: 100%;
+    text-align: center;
+    border: 3px solid #8A0000; /* Ваш фірмовий колір */
+    position: relative;
+    overflow: hidden;
+}
+
+/* Іконка зверху */
+.icon-container {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+/* Заголовок */
+.rule-title {
+    color: #8A0000;
+    font-family: 'Jaro', sans-serif;
+    font-size: 2.5rem;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    letter-spacing: 1px;
+}
+
+/* Текст правила */
+.rule-text {
+    font-size: 1.4rem;
+    line-height: 1.6;
+    color: #333;
+    font-weight: 500;
+    margin-bottom: 2.5rem;
+}
+
+/* Виділення "70 балів" */
+.highlight {
+    color: #8A0000;
+    font-weight: 800;
+    text-decoration: underline;
+    white-space: nowrap;
+}
+
+/* Штамп "Затверджено" для антуражу */
+.signature {
+    margin-bottom: 2rem;
+    opacity: 0.8;
+}
+
+.stamp {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border: 3px solid #8A0000;
+    color: #8A0000;
+    font-weight: bold;
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    border-radius: 8px;
+    transform: rotate(-5deg); /* Трохи нахиляємо штамп */
+    letter-spacing: 2px;
+}
+
+/* Кнопка */
+.btn-agree {
+    display: inline-block;
+    background-color: #8A0000;
+    color: white;
+    padding: 1rem 2.5rem;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1.1rem;
+    transition: transform 0.2s, background-color 0.2s;
+    box-shadow: 0 4px 15px rgba(138, 0, 0, 0.3);
+}
+
+.btn-agree:hover {
+    background-color: #a00000;
+    transform: translateY(-2px);
+}
+
+.btn-agree:active {
+    transform: scale(0.98);
+}

@@ -11,20 +11,14 @@
 <div class="container mt-4">
     <div class="row align-items-center mb-4">
         <div class="col-md-6">
-            <h2 class="fw-bold m-0" style="color: #8A0000; font-family: 'Jaro', sans-serif; font-size: 2.5rem;">
+            <h2 class="fw-bold m-0 page-title">
                 Список тренувань
             </h2>
         </div>
         <div class="col-md-6 mt-3 mt-md-0">
             <div class="input-group">
-                <span class="input-group-text bg-white border-end-0">🔍</span>
-                <!-- 
-                   👇 ИЗМЕНЕНИЕ: 
-                   Используем value + @oninput для мгновенной реакции.
-                   @bind:event="oninput" тоже можно, но метод дает больше контроля.
-                -->
                 <input type="text" class="form-control border-start-0 ps-0" 
-                       placeholder="Пошук (наприклад: жим...)" 
+                       placeholder=" Пошук" 
                        value="@searchTerm" @oninput="OnSearchInput" />
             </div>
         </div>
@@ -41,7 +35,7 @@
 
             @foreach (var tag in allTags)
             {
-                <button class="btn btn-sm rounded-pill @(selectedTagName == tag.Name ? "btn-danger" : "btn-outline-secondary")"
+                <button class="btn btn-sm rounded-pill @(selectedTagName == tag.Name ? "btn-danger-custom" : "btn-outline-secondary")"
                         @onclick="() => FilterByTag(tag.Name)">
                     @tag.Name
                 </button>
@@ -61,35 +55,34 @@
     else if (filteredWorkouts == null || filteredWorkouts.Count == 0)
     {
         <div class="text-center py-5">
-            <div style="font-size: 3rem;">📭</div>
+            <div class="empty-state-icon">📭</div>
             <h5 class="text-muted mt-3">Тренувань не знайдено</h5>
             <p class="small text-muted">Спробуйте змінити параметри пошуку</p>
-            <!-- Кнопка сброса очищает и поиск, и теги -->
             <button class="btn btn-outline-dark btn-sm mt-2" @onclick="ResetFilters">Скинути всі фільтри</button>
         </div>
     }
     else
     {
         <div class="row g-4">
-            <!-- 👇 ВАЖНО: Рисуем список filteredWorkouts -->
             @foreach (var workout in filteredWorkouts)
             {
                 <div class="col-md-6 col-lg-4">
                     <div class="card h-100 shadow-sm border-0 workout-card">
                         <div class="card-body d-flex flex-column">
                             <div class="d-flex justify-content-between align-items-start mb-2">
-                                <h5 class="card-title fw-bold text-dark mb-0">@workout.Name</h5>
+                                <a href="/workout/@workout.Id" class="text-decoration-none text-dark">
+                                    <h5 class="card-title fw-bold mb-0">@workout.Name</h5>
+                                </a>
                                 
-                                <button class="btn btn-link p-0 text-decoration-none like-btn" 
-                                        @onclick="() => ToggleLike(workout.Id)">
-                                    @if (likedWorkoutIds.Contains(workout.Id))
-                                    {
-                                        <span style="font-size: 1.5rem; color: #dc3545;">❤️</span>
-                                    }
-                                    else
-                                    {
-                                        <span style="font-size: 1.5rem; opacity: 0.3; filter: grayscale(100%);">❤️</span>
-                                    }
+                                <!-- КНОПКА ПЛЮСИК (КАРТИНКА) -->
+                                <button class="like-btn" @onclick="() => ToggleLike(workout.Id)" title="Додати в улюблене">
+                                    <!-- 
+                                        Внимание: класс .liked делает иконку красной.
+                                        Проверяем наличие ID в списке likedWorkoutIds.
+                                    -->
+                                    <img src="/images/plus.svg" 
+                                         alt="Add to favorites"
+                                         class="plus-img @(likedWorkoutIds.Contains(workout.Id) ? "liked" : "unliked")" />
                                 </button>
                             </div>
 
@@ -146,25 +139,20 @@
             }
         </div>
     }
+    
+    <!-- Кнопка створення (FAB) -->
+    <a href="/workout-builder" class="btn btn-danger-custom fab-add text-decoration-none" title="Створити тренування">
+        +
+    </a>
 </div>
 
-<style>
-    .workout-card { transition: transform 0.2s, box-shadow 0.2s; }
-    .workout-card:hover { transform: translateY(-5px); box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important; }
-    .like-btn { transition: transform 0.2s; }
-    .like-btn:active { transform: scale(1.2); }
-    .btn-danger { background-color: #8A0000; border-color: #8A0000; }
-</style>
-
 @code {
-    // 👇 ДВА СПИСКА ДАННЫХ
-    // allWorkouts - хранит ВСЕ тренировки, загруженные с сервера (по текущему тегу)
-    // filteredWorkouts - хранит то, что мы показываем на экране (с учетом поиска)
     private List<WorkoutDto> allWorkouts = new List<WorkoutDto>();
     private List<WorkoutDto> filteredWorkouts = new List<WorkoutDto>();
     
     private List<TagDto> allTags = new List<TagDto>();
     private Dictionary<string, string> tagsDictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+    // Сет для быстрого поиска лайкнутых ID
     private HashSet<string> likedWorkoutIds = new HashSet<string>();
     
     private string searchTerm = "";
@@ -188,7 +176,6 @@
         {
             var client = await GetHttpClientWithToken();
 
-            // 1. Загрузка тегов (только при старте)
             if (initialLoad)
             {
                 try 
@@ -203,11 +190,6 @@
                 catch { }
             }
 
-            // 2. Формируем URL.
-            // ВАЖНО: Мы НЕ отправляем 'Name' на сервер, если хотим искать локально по всем загруженным.
-            // Мы просим сервер вернуть все тренировки (или отфильтрованные только по тегу),
-            // а поиск текста будем делать в браузере.
-            
             var url = "/api/workouts";
             if (!string.IsNullOrEmpty(selectedTagName))
             {
@@ -218,23 +200,13 @@
             if (workoutsResponse != null)
             {
                 allWorkouts = workoutsResponse;
-                
-                // Сразу применяем фильтр (вдруг в строке поиска уже что-то написано)
                 ApplyLocalFilter();
             }
 
-            // 3. Загрузка лайков
+            // ЗАГРУЗКА ЛАЙКОВ ПОЛЬЗОВАТЕЛЯ
             if (initialLoad)
             {
-                try 
-                {
-                    var userProfile = await client.GetFromJsonAsync<UserProfileDto>("/api/users/me");
-                    if (userProfile?.FavoriteWorkoutsIds != null)
-                    {
-                        likedWorkoutIds = new HashSet<string>(userProfile.FavoriteWorkoutsIds);
-                    }
-                }
-                catch {}
+                await LoadUserLikes();
             }
         }
         catch (Exception ex)
@@ -248,24 +220,47 @@
         }
     }
 
-    // 👇 МЕТОД 1: Обработчик ввода текста
+    private async Task LoadUserLikes()
+    {
+        try 
+        {
+            var client = await GetHttpClientWithToken();
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            // Запрашиваем профиль пользователя
+            var userProfile = await client.GetFromJsonAsync<UserProfileDto>("/api/users/me", options);
+            
+            if (userProfile != null)
+            {
+                // Проверяем все возможные поля, куда сервер мог положить список лайков
+                var ids = userProfile.FavoriteWorkoutsIds 
+                       ?? userProfile.Favorites 
+                       ?? userProfile.LikedWorkouts 
+                       ?? new List<string>();
+                
+                likedWorkoutIds = new HashSet<string>(ids);
+                StateHasChanged(); // Обновляем UI, чтобы плюсики покраснели
+            }
+        }
+        catch (Exception ex) 
+        {
+            Console.WriteLine($"Error loading likes: {ex.Message}");
+        }
+    }
+
     private void OnSearchInput(ChangeEventArgs e)
     {
         searchTerm = e.Value?.ToString() ?? "";
         ApplyLocalFilter();
     }
 
-    // 👇 МЕТОД 2: Локальная фильтрация (сердце поиска)
     private void ApplyLocalFilter()
     {
         if (string.IsNullOrWhiteSpace(searchTerm))
         {
-            // Если поиск пуст - показываем всё, что загрузили
             filteredWorkouts = new List<WorkoutDto>(allWorkouts);
         }
         else
         {
-            // Иначе фильтруем. StringComparison.OrdinalIgnoreCase игнорирует регистр (А == а)
             filteredWorkouts = allWorkouts
                 .Where(w => w.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
                 .ToList();
@@ -275,7 +270,6 @@
     private async Task FilterByTag(string? tagName)
     {
         selectedTagName = tagName;
-        // При смене тега мы делаем новый запрос к API, чтобы получить список для этого тега
         await LoadData();
     }
     
@@ -283,7 +277,6 @@
     {
         searchTerm = "";
         selectedTagName = null;
-        // Перезагружаем "Всё"
         _ = LoadData();
     }
 
@@ -296,6 +289,7 @@
             return;
         }
 
+        // Оптимистичное обновление UI (сразу красим/обесцвечиваем)
         bool isLiked = likedWorkoutIds.Contains(workoutId);
         if (isLiked) likedWorkoutIds.Remove(workoutId);
         else likedWorkoutIds.Add(workoutId);
@@ -303,11 +297,13 @@
         try
         {
             var client = await GetHttpClientWithToken();
+            // Отправляем запрос на сервер
             var response = await client.PutAsync($"/api/users/likeButton/{workoutId}", null);
-            if (!response.IsSuccessStatusCode) throw new Exception();
+            if (!response.IsSuccessStatusCode) throw new Exception("Failed to like");
         }
         catch
         {
+            // Если ошибка - откатываем изменение
             if (isLiked) likedWorkoutIds.Add(workoutId);
             else likedWorkoutIds.Remove(workoutId);
         }
@@ -344,9 +340,16 @@
         public string Name { get; set; } = "";
     }
 
+    // Умный DTO для профиля - ловит лайки в любом поле
     public class UserProfileDto
     {
         [JsonPropertyName("favoriteWorkoutsIds")] 
         public List<string>? FavoriteWorkoutsIds { get; set; }
+
+        [JsonPropertyName("favorites")] 
+        public List<string>? Favorites { get; set; }
+
+        [JsonPropertyName("likedWorkouts")] 
+        public List<string>? LikedWorkouts { get; set; }
     }
 }
